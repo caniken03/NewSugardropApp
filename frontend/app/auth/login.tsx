@@ -51,15 +51,43 @@ export default function LoginScreen() {
     return <LoadingSpinner />;
   }
 
+  const containerStyle = {
+    flex: 1,
+    backgroundColor: colors.background,
+  };
+
+  const scrollContentStyle = {
+    flexGrow: 1,
+    padding: 24,
+    paddingTop: insets.top + 40,
+  };
+
+  const inputStyle = {
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    color: colors.text,
+  };
+
+  const buttonStyle = {
+    height: 52,
+    borderRadius: 12,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginBottom: 24,
+    backgroundColor: colors.primary,
+  };
+
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={containerStyle}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + 40 },
-        ]}
+        contentContainerStyle={scrollContentStyle}
         showsVerticalScrollIndicator={false}>
         
         {/* Header */}
@@ -80,14 +108,7 @@ export default function LoginScreen() {
           <View style={styles.inputContainer}>
             <Text style={[styles.label, { color: colors.text }]}>Email</Text>
             <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  color: colors.text,
-                },
-              ]}
+              style={inputStyle}
               value={email}
               onChangeText={setEmail}
               placeholder="Enter your email"
@@ -102,15 +123,7 @@ export default function LoginScreen() {
             <Text style={[styles.label, { color: colors.text }]}>Password</Text>
             <View style={styles.passwordContainer}>
               <TextInput
-                style={[
-                  styles.input,
-                  styles.passwordInput,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
-                    color: colors.text,
-                  },
-                ]}
+                style={[inputStyle, { paddingRight: 50 }]}
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Enter your password"
@@ -132,7 +145,7 @@ export default function LoginScreen() {
           </View>
 
           <TouchableOpacity
-            style={[styles.loginButton, { backgroundColor: colors.primary }]}
+            style={buttonStyle}
             onPress={handleLogin}
             disabled={loading}>
             <Text style={styles.loginButtonText}>Sign In</Text>
@@ -167,13 +180,6 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    padding: 24,
-  },
   header: {
     alignItems: 'center',
     marginBottom: 40,
@@ -207,31 +213,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 8,
   },
-  input: {
-    height: 52,
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    fontSize: 16,
-  },
   passwordContainer: {
     position: 'relative',
-  },
-  passwordInput: {
-    paddingRight: 50,
   },
   eyeButton: {
     position: 'absolute',
     right: 16,
     top: 16,
     padding: 4,
-  },
-  loginButton: {
-    height: 52,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
   },
   loginButtonText: {
     color: '#ffffff',
