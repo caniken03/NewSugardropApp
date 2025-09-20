@@ -67,12 +67,6 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
       type: 'age_gender' as const,
     },
     {
-      id: 'activity',
-      title: "What's your activity level?",
-      subtitle: 'This helps us recommend your daily SugarPoints target',
-      type: 'activity' as const,
-    },
-    {
       id: 'goals',
       title: 'What are your health goals?',
       subtitle: 'Select all that apply (you can change these later)',
