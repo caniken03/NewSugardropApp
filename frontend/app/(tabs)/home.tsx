@@ -248,11 +248,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     marginBottom: 24,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...webSafeShadow.medium,
   },
   cardTitle: {
     fontSize: 18,
