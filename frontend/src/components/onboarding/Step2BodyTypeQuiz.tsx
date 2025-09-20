@@ -278,22 +278,26 @@ export default function Step2BodyTypeQuiz({ data, onNext, onBack }: Step2Props) 
             <Text style={styles.guidanceText}>
               The quiz has 15 quick questions. At the end, you'll receive a personalised SugarPoints range to guide your weight and health goals.
             </Text>
-            
-            <View style={styles.rememberSection}>
-              <Text style={styles.rememberTitle}>Remember:</Text>
-              <View style={styles.bulletPoints}>
-                <Text style={styles.bulletPoint}>• The results are a starting point, not a fixed rule.</Text>
-                <Text style={styles.bulletPoint}>• You can adjust your daily SugarPoints up or down over time.</Text>
-                <Text style={styles.bulletPoint}>• Give any new intake level 3–4 weeks before making changes.</Text>
-              </View>
+          </Card>
+
+          {/* Remember Section Card */}
+          <Card variant="outlined" style={styles.rememberCard}>
+            <Text style={styles.rememberTitle}>Remember:</Text>
+            <View style={styles.bulletPoints}>
+              <Text style={styles.bulletPoint}>• The results are a starting point, not a fixed rule.</Text>
+              <Text style={styles.bulletPoint}>• You can adjust your daily SugarPoints up or down over time.</Text>
+              <Text style={styles.bulletPoint}>• Give any new intake level 3–4 weeks before making changes.</Text>
             </View>
-            
+          </Card>
+
+          {/* Conclusion Card */}
+          <Card variant="outlined" style={styles.conclusionCard}>
             <Text style={styles.guidanceConclusion}>
-              This quiz is designed to help you understand your body type and find the right SugarPoints level for lasting results.
+              This quiz is designed to help you understand your body type and determine the optimal SugarPoints level for achieving lasting results.
             </Text>
             
             <Text style={styles.instructions}>
-              Carefully review each question or statement, and select the option that most accurately represents you.
+              As you progress through the quiz, carefully review each question or statement, and select the option that most accurately represents you.
             </Text>
           </Card>
 
