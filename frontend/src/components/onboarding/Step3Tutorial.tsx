@@ -61,7 +61,7 @@ export default function Step3Tutorial({ data, onNext, onBack }: Step3Props) {
       ]}>
       <View style={styles.tutorialIcon}>
         <Ionicons
-          name={step.icon as any}
+          name={step.icon as keyof typeof Ionicons.glyphMap}
           size={48}
           color={colors.primary[400]}
         />
