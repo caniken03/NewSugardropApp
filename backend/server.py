@@ -328,20 +328,23 @@ async def create_food_entry(entry_data: FoodEntryCreate, current_user: User = De
         return entry
     except Exception as e:
         # If new columns don't exist, try with minimal fields
-        if any(field in str(e) for field in ["carbs_per_100g", "fat_per_100g", "protein_per_100g", "sugar_points"]):
-            logger.warning("New SugarPoints columns not found, inserting with legacy fields")
-            legacy_entry_dict = {
+        if any(field in str(e) for field in ["carbs_per_100g", "fat_per_100g", "protein_per_100g", "sugar_points", "meal_type"]):
+            logger.warning(f"New columns not found in database schema, inserting with basic legacy fields: {str(e)}")
+            # Use only the most basic fields that should exist in any food_entries table
+            basic_entry_dict = {
                 "id": entry_dict["id"],
                 "user_id": entry_dict["user_id"],
                 "name": entry_dict["name"],
                 "sugar_content": entry_dict["sugar_content"],
                 "portion_size": entry_dict["portion_size"],
-                "calories": entry_dict.get("calories"),
-                "meal_type": entry_dict.get("meal_type", "snack"),
                 "timestamp": entry_dict["timestamp"]
             }
             
-            result = supabase.table('food_entries').insert(legacy_entry_dict).execute()
+            # Only add calories if it's not None
+            if entry_dict.get("calories") is not None:
+                basic_entry_dict["calories"] = entry_dict["calories"]
+            
+            result = supabase.table('food_entries').insert(basic_entry_dict).execute()
             if not result.data:
                 raise HTTPException(status_code=500, detail="Failed to create food entry")
             
