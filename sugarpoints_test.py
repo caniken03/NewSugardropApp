@@ -142,7 +142,7 @@ class SugarPointsBackendTester:
                 "carbs_per_100g": 30.0,
                 "portion_size": 50,
                 "expected_sugar_points": 15,  # (30 * 50) / 100 = 15
-                "expected_blocks": 3,  # rounded(15/6) = 3
+                "expected_blocks": 2,  # round(15/6) = round(2.5) = 2 (banker's rounding)
                 "expected_text": "15 SugarPoints"
             }
         ]
