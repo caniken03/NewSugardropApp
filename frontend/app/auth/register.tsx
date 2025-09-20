@@ -27,7 +27,6 @@ export default function RegisterScreen() {
     email: '',
     password: '',
     confirmPassword: '',
-    dailyGoal: '50',
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
