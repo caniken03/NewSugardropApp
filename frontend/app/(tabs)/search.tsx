@@ -12,7 +12,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { apiClient } from '../../src/services/api';
 import AuthGuard from '../../src/components/AuthGuard';
+import LoadingSpinner from '../../src/components/LoadingSpinner';
 
 interface FoodItem {
   id: string;
@@ -21,56 +23,8 @@ interface FoodItem {
   sugar_per_100g: number;
   calories_per_100g: number;
   category: string;
+  confidence?: number;
 }
-
-const MOCK_FOODS: FoodItem[] = [
-  {
-    id: '1',
-    name: 'Apple',
-    sugar_per_100g: 10.4,
-    calories_per_100g: 52,
-    category: 'Fruits',
-  },
-  {
-    id: '2',
-    name: 'Banana',
-    sugar_per_100g: 12.2,
-    calories_per_100g: 89,
-    category: 'Fruits',
-  },
-  {
-    id: '3',
-    name: 'Orange Juice',
-    brand: 'Tropicana',
-    sugar_per_100g: 8.4,
-    calories_per_100g: 45,
-    category: 'Beverages',
-  },
-  {
-    id: '4',
-    name: 'Chocolate Bar',
-    brand: 'Hershey\'s',
-    sugar_per_100g: 56.0,
-    calories_per_100g: 534,
-    category: 'Sweets',
-  },
-  {
-    id: '5',
-    name: 'Yogurt',
-    brand: 'Chobani',
-    sugar_per_100g: 4.7,
-    calories_per_100g: 59,
-    category: 'Dairy',
-  },
-  {
-    id: '6',
-    name: 'Coca Cola',
-    brand: 'Coca-Cola',
-    sugar_per_100g: 10.6,
-    calories_per_100g: 42,
-    category: 'Beverages',
-  },
-];
 
 export default function SearchScreen() {
   return (
@@ -84,22 +38,55 @@ function SearchContent() {
   const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<FoodItem[]>([]);
+  const [popularFoods, setPopularFoods] = useState<FoodItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingPopular, setIsLoadingPopular] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    loadPopularFoods();
+  }, []);
+
+  const loadPopularFoods = async (category?: string) => {
+    setIsLoadingPopular(true);
+    try {
+      const response = await apiClient.get('/food/popular', {
+        params: { category, limit: 10 }
+      });
+      setPopularFoods(response.data.results || []);
+    } catch (error) {
+      console.error('Error loading popular foods:', error);
+    } finally {
+      setIsLoadingPopular(false);
+    }
+  };
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
-    // Simulate API call
-    setTimeout(() => {
-      const filtered = MOCK_FOODS.filter(
-        food =>
-          food.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (food.brand && food.brand.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-      setResults(filtered);
+    try {
+      const response = await apiClient.post('/food/search', {
+        query: searchQuery.trim(),
+        limit: 20
+      });
+      setResults(response.data.results || []);
+    } catch (error) {
+      console.error('Error searching food:', error);
+      Alert.alert('Error', 'Failed to search foods. Please try again.');
+    } finally {
       setIsSearching(false);
-    }, 500);
+    }
+  };
+
+  const handleCategorySelect = (category: string) => {
+    if (activeCategory === category) {
+      setActiveCategory(null);
+      loadPopularFoods();
+    } else {
+      setActiveCategory(category);
+      loadPopularFoods(category.toLowerCase());
+    }
   };
 
   const handleSelectFood = (food: FoodItem) => {
@@ -109,6 +96,8 @@ function SearchContent() {
         foodName: food.name,
         sugarPer100g: food.sugar_per_100g.toString(),
         caloriesPer100g: food.calories_per_100g.toString(),
+        brand: food.brand || '',
+        category: food.category,
       },
     });
   };
@@ -118,6 +107,8 @@ function SearchContent() {
     if (sugar < 15) return { level: 'Medium', color: colors.warning };
     return { level: 'High', color: colors.error };
   };
+
+  const categories = ['Fruits', 'Vegetables', 'Protein', 'Grains', 'Dairy', 'Snacks', 'Beverages'];
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -147,26 +138,38 @@ function SearchContent() {
         <TouchableOpacity
           style={[styles.searchButton, { backgroundColor: colors.primary }]}
           onPress={handleSearch}
-          disabled={isSearching}>
-          <Ionicons name="search" size={20} color="#ffffff" />
+          disabled={isSearching || !searchQuery.trim()}>
+          {isSearching ? (
+            <LoadingSpinner size="small" />
+          ) : (
+            <Ionicons name="search" size={20} color="#ffffff" />
+          )}
         </TouchableOpacity>
       </View>
 
-      {/* Quick Categories */}
+      {/* Categories */}
       <View style={styles.categoriesContainer}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          Quick Categories
+          Categories
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {['Fruits', 'Beverages', 'Sweets', 'Dairy', 'Snacks'].map((category) => (
+          {categories.map((category) => (
             <TouchableOpacity
               key={category}
-              style={[styles.categoryChip, { backgroundColor: colors.surface }]}
-              onPress={() => {
-                setSearchQuery(category);
-                handleSearch();
-              }}>
-              <Text style={[styles.categoryText, { color: colors.text }]}>
+              style={[
+                styles.categoryChip,
+                {
+                  backgroundColor: activeCategory === category ? colors.primary : colors.surface,
+                },
+              ]}
+              onPress={() => handleCategorySelect(category)}>
+              <Text
+                style={[
+                  styles.categoryText,
+                  {
+                    color: activeCategory === category ? '#ffffff' : colors.text,
+                  },
+                ]}>
                 {category}
               </Text>
             </TouchableOpacity>
@@ -174,22 +177,87 @@ function SearchContent() {
         </ScrollView>
       </View>
 
-      {/* Search Results */}
+      {/* Results */}
       <ScrollView style={styles.resultsContainer} showsVerticalScrollIndicator={false}>
-        {isSearching && (
-          <View style={styles.loadingContainer}>
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-              Searching...
-            </Text>
-          </View>
-        )}
-
+        {/* Search Results */}
         {results.length > 0 && (
           <>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Search Results ({results.length})
-            </Text>
+            <View style={styles.resultHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Search Results ({results.length})
+              </Text>
+              <View style={[styles.sourceBadge, { backgroundColor: colors.primary }]}>
+                <Text style={styles.sourceBadgeText}>Passio AI</Text>
+              </View>
+            </View>
+            
             {results.map((food) => {
+              const sugarLevel = getSugarLevel(food.sugar_per_100g);
+              return (
+                <TouchableOpacity
+                  key={food.id}
+                  style={[styles.foodItem, { backgroundColor: colors.surface }]}
+                  onPress={() => handleSelectFood(food)}>
+                  <View style={styles.foodInfo}>
+                    <Text style={[styles.foodName, { color: colors.text }]}>
+                      {food.name}
+                    </Text>
+                    {food.brand && (
+                      <Text style={[styles.foodBrand, { color: colors.textSecondary }]}>
+                        {food.brand}
+                      </Text>
+                    )}
+                    <View style={styles.foodMeta}>
+                      <Text style={[styles.foodCategory, { color: colors.textSecondary }]}>
+                        {food.category}
+                      </Text>
+                      {food.confidence && (
+                        <Text style={[styles.confidence, { color: colors.textSecondary }]}>
+                          • {Math.round(food.confidence * 100)}% match
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  <View style={styles.nutritionInfo}>
+                    <View style={styles.nutritionItem}>
+                      <Text style={[styles.nutritionValue, { color: sugarLevel.color }]}>
+                        {food.sugar_per_100g.toFixed(1)}g
+                      </Text>
+                      <Text style={[styles.nutritionLabel, { color: colors.textSecondary }]}>
+                        Sugar/100g
+                      </Text>
+                    </View>
+                    <View style={styles.nutritionItem}>
+                      <Text style={[styles.nutritionValue, { color: colors.text }]}>
+                        {Math.round(food.calories_per_100g)}
+                      </Text>
+                      <Text style={[styles.nutritionLabel, { color: colors.textSecondary }]}>
+                        Cal/100g
+                      </Text>
+                    </View>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                </TouchableOpacity>
+              );
+            })}
+          </>
+        )}
+
+        {/* Popular Foods */}
+        <View style={styles.popularSection}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {activeCategory ? `Popular ${activeCategory}` : 'Popular Foods'}
+          </Text>
+          
+          {isLoadingPopular ? (
+            <View style={styles.loadingContainer}>
+              <LoadingSpinner />
+              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+                Loading foods...
+              </Text>
+            </View>
+          ) : (
+            popularFoods.map((food) => {
               const sugarLevel = getSugarLevel(food.sugar_per_100g);
               return (
                 <TouchableOpacity
@@ -212,7 +280,7 @@ function SearchContent() {
                   <View style={styles.nutritionInfo}>
                     <View style={styles.nutritionItem}>
                       <Text style={[styles.nutritionValue, { color: sugarLevel.color }]}>
-                        {food.sugar_per_100g}g
+                        {food.sugar_per_100g.toFixed(1)}g
                       </Text>
                       <Text style={[styles.nutritionLabel, { color: colors.textSecondary }]}>
                         Sugar/100g
@@ -220,7 +288,7 @@ function SearchContent() {
                     </View>
                     <View style={styles.nutritionItem}>
                       <Text style={[styles.nutritionValue, { color: colors.text }]}>
-                        {food.calories_per_100g}
+                        {Math.round(food.calories_per_100g)}
                       </Text>
                       <Text style={[styles.nutritionLabel, { color: colors.textSecondary }]}>
                         Cal/100g
@@ -230,10 +298,11 @@ function SearchContent() {
                   <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
                 </TouchableOpacity>
               );
-            })}
-          </>
-        )}
+            })
+          )}
+        </View>
 
+        {/* Empty States */}
         {searchQuery.length > 0 && results.length === 0 && !isSearching && (
           <View style={styles.noResultsContainer}>
             <Ionicons name="search" size={48} color={colors.textSecondary} />
@@ -241,7 +310,7 @@ function SearchContent() {
               No Results Found
             </Text>
             <Text style={[styles.noResultsText, { color: colors.textSecondary }]}>
-              Try searching with different keywords or add a custom food entry
+              Try different keywords or add a custom food entry
             </Text>
             <TouchableOpacity
               style={[styles.addCustomButton, { backgroundColor: colors.primary }]}
@@ -251,14 +320,14 @@ function SearchContent() {
           </View>
         )}
 
-        {searchQuery.length === 0 && (
+        {searchQuery.length === 0 && popularFoods.length === 0 && !isLoadingPopular && (
           <View style={styles.emptyStateContainer}>
             <Ionicons name="restaurant" size={64} color={colors.textSecondary} />
             <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
-              Search for Foods
+              Discover Foods
             </Text>
             <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
-              Find nutrition information for thousands of foods and brands
+              Search for any food to get detailed nutrition information powered by Passio AI
             </Text>
           </View>
         )}
@@ -318,16 +387,37 @@ const styles = StyleSheet.create({
   resultsContainer: {
     flex: 1,
   },
+  resultHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sourceBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  sourceBadgeText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  popularSection: {
+    marginTop: 24,
+  },
   loadingContainer: {
     alignItems: 'center',
     paddingVertical: 40,
   },
   loadingText: {
     fontSize: 16,
+    marginTop: 12,
   },
   foodItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -349,7 +439,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 2,
   },
+  foodMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   foodCategory: {
+    fontSize: 12,
+  },
+  confidence: {
     fontSize: 12,
   },
   nutritionInfo: {
