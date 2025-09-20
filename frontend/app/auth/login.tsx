@@ -12,11 +12,11 @@ import {
 } from 'react-native';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../src/contexts/AuthContext';
-import { useTheme } from '../../src/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { toStyle } from '../../src/utils/styles';
-import LoadingSpinner from '../../src/components/LoadingSpinner';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { colors, typography, spacing, layout, touchTargets, borderRadius } from '@/design-system';
+import { Button, Card } from '@/design-system/components';
 
 export default function LoginScreen() {
   const { login } = useAuth();
