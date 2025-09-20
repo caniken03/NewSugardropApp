@@ -233,6 +233,144 @@ class PassioService:
                 
         return normalized
     
+    def _extract_carbs_content(self, item: Dict) -> float:
+        """
+        Extract total carbohydrate content per 100g from Passio response
+        """
+        nutrients = item.get("nutrients", {})
+        
+        # Check for carbohydrates in different formats
+        carb_keys = ["carbohydrates", "carbs", "total_carbs", "carbohydrate_g", "total_carbohydrates"]
+        for key in carb_keys:
+            if key in nutrients:
+                value = nutrients[key]
+                return float(value.get("quantity", 0) if isinstance(value, dict) else value)
+        
+        # Check in serving unit nutrients
+        serving_units = item.get("serving_units", [])
+        for unit in serving_units:
+            if unit.get("unit_name") == "gram" or unit.get("serving_weight") == 100:
+                unit_nutrients = unit.get("nutrients", {})
+                for key in carb_keys:
+                    if key in unit_nutrients:
+                        value = unit_nutrients[key]
+                        return float(value.get("quantity", 0) if isinstance(value, dict) else value)
+        
+        # Default fallback based on food type
+        return self._estimate_carb_content(item.get("name", ""))
+
+    def _extract_fat_content(self, item: Dict) -> float:
+        """
+        Extract fat content per 100g from Passio response
+        """
+        nutrients = item.get("nutrients", {})
+        
+        # Check for fat in different formats
+        fat_keys = ["fat", "total_fat", "fat_g", "fats"]
+        for key in fat_keys:
+            if key in nutrients:
+                value = nutrients[key]
+                return float(value.get("quantity", 0) if isinstance(value, dict) else value)
+        
+        # Check in serving unit nutrients
+        serving_units = item.get("serving_units", [])
+        for unit in serving_units:
+            if unit.get("unit_name") == "gram" or unit.get("serving_weight") == 100:
+                unit_nutrients = unit.get("nutrients", {})
+                for key in fat_keys:
+                    if key in unit_nutrients:
+                        value = unit_nutrients[key]
+                        return float(value.get("quantity", 0) if isinstance(value, dict) else value)
+        
+        # Default fallback
+        return self._estimate_fat_content(item.get("name", ""))
+
+    def _extract_protein_content(self, item: Dict) -> float:
+        """
+        Extract protein content per 100g from Passio response
+        """
+        nutrients = item.get("nutrients", {})
+        
+        # Check for protein in different formats
+        protein_keys = ["protein", "protein_g", "proteins"]
+        for key in protein_keys:
+            if key in nutrients:
+                value = nutrients[key]
+                return float(value.get("quantity", 0) if isinstance(value, dict) else value)
+        
+        # Check in serving unit nutrients
+        serving_units = item.get("serving_units", [])
+        for unit in serving_units:
+            if unit.get("unit_name") == "gram" or unit.get("serving_weight") == 100:
+                unit_nutrients = unit.get("nutrients", {})
+                for key in protein_keys:
+                    if key in unit_nutrients:
+                        value = unit_nutrients[key]
+                        return float(value.get("quantity", 0) if isinstance(value, dict) else value)
+        
+        # Default fallback
+        return self._estimate_protein_content(item.get("name", ""))
+
+    def _estimate_carb_content(self, food_name: str) -> float:
+        """
+        Estimate carbohydrate content based on food name when not available
+        """
+        name_lower = food_name.lower()
+        
+        # High carb foods
+        if any(word in name_lower for word in ["bread", "pasta", "rice", "potato", "cereal", "oats"]):
+            return 70.0
+        # Medium-high carb foods  
+        elif any(word in name_lower for word in ["fruit", "apple", "banana", "orange", "berry"]):
+            return 15.0
+        # Medium carb foods
+        elif any(word in name_lower for word in ["vegetable", "carrot", "pea", "corn"]):
+            return 8.0
+        # Low carb foods
+        elif any(word in name_lower for word in ["meat", "chicken", "fish", "egg", "cheese"]):
+            return 2.0
+        # Default
+        else:
+            return 10.0
+
+    def _estimate_fat_content(self, food_name: str) -> float:
+        """
+        Estimate fat content based on food name when not available
+        """
+        name_lower = food_name.lower()
+        
+        # High fat foods
+        if any(word in name_lower for word in ["oil", "butter", "nuts", "avocado", "cheese"]):
+            return 80.0
+        # Medium fat foods
+        elif any(word in name_lower for word in ["meat", "chicken", "fish", "egg"]):
+            return 10.0
+        # Low fat foods
+        elif any(word in name_lower for word in ["fruit", "vegetable", "bread", "pasta", "rice"]):
+            return 1.0
+        # Default
+        else:
+            return 5.0
+
+    def _estimate_protein_content(self, food_name: str) -> float:
+        """
+        Estimate protein content based on food name when not available
+        """
+        name_lower = food_name.lower()
+        
+        # High protein foods
+        if any(word in name_lower for word in ["meat", "chicken", "fish", "egg", "protein"]):
+            return 25.0
+        # Medium protein foods
+        elif any(word in name_lower for word in ["cheese", "milk", "yogurt", "nuts", "beans"]):
+            return 8.0
+        # Low protein foods
+        elif any(word in name_lower for word in ["fruit", "vegetable", "bread", "pasta", "rice"]):
+            return 3.0
+        # Default
+        else:
+            return 5.0
+
     def _extract_sugar_content(self, item: Dict) -> float:
         """
         Extract sugar content from various Passio response formats
