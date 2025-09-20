@@ -496,16 +496,18 @@ class PassioService:
     
     def _get_fallback_results(self, query: str) -> List[Dict[str, Any]]:
         """
-        Provide fallback results when Passio API is unavailable
+        Provide fallback results when Passio API is unavailable with SugarPoints format
         """
-        # Enhanced fallback database with more realistic foods
+        # Enhanced fallback database with SugarPoints nutrition format
         fallback_foods = [
             {
                 "id": f"fallback_{hash(query + 'apple')}",
                 "name": "Apple",
                 "brand": None,
-                "sugar_per_100g": 10.4,
-                "calories_per_100g": 52,
+                "carbs_per_100g": 14.0,
+                "fat_per_100g": 0.2,
+                "protein_per_100g": 0.3,
+                "sugar_per_100g": 10.4,  # Legacy field
                 "category": "Fruits",
                 "confidence": 0.8
             },
@@ -513,8 +515,10 @@ class PassioService:
                 "id": f"fallback_{hash(query + 'banana')}",
                 "name": "Banana",
                 "brand": None,
-                "sugar_per_100g": 12.2,
-                "calories_per_100g": 89,
+                "carbs_per_100g": 23.0,
+                "fat_per_100g": 0.3,
+                "protein_per_100g": 1.1,
+                "sugar_per_100g": 12.2,  # Legacy field
                 "category": "Fruits",
                 "confidence": 0.8
             },
@@ -522,8 +526,10 @@ class PassioService:
                 "id": f"fallback_{hash(query + 'orange')}",
                 "name": "Orange",
                 "brand": None,
-                "sugar_per_100g": 9.4,
-                "calories_per_100g": 47,
+                "carbs_per_100g": 12.0,
+                "fat_per_100g": 0.1,
+                "protein_per_100g": 0.9,
+                "sugar_per_100g": 9.4,  # Legacy field
                 "category": "Fruits",
                 "confidence": 0.8
             },
@@ -531,8 +537,10 @@ class PassioService:
                 "id": f"fallback_{hash(query + 'chicken')}",
                 "name": "Chicken Breast",
                 "brand": None,
-                "sugar_per_100g": 0.0,
-                "calories_per_100g": 165,
+                "carbs_per_100g": 0.0,
+                "fat_per_100g": 3.6,
+                "protein_per_100g": 31.0,
+                "sugar_per_100g": 0.0,  # Legacy field
                 "category": "Protein",
                 "confidence": 0.7
             },
@@ -540,8 +548,10 @@ class PassioService:
                 "id": f"fallback_{hash(query + 'rice')}",
                 "name": "White Rice",
                 "brand": None,
-                "sugar_per_100g": 0.1,
-                "calories_per_100g": 130,
+                "carbs_per_100g": 28.0,
+                "fat_per_100g": 0.3,
+                "protein_per_100g": 2.7,
+                "sugar_per_100g": 0.1,  # Legacy field
                 "category": "Grains",
                 "confidence": 0.7
             }
@@ -552,17 +562,57 @@ class PassioService:
         filtered = [food for food in fallback_foods if query_lower in food["name"].lower()]
         
         return filtered if filtered else fallback_foods[:3]
-    
+
     def _get_popular_fallback(self, category: str = None) -> List[Dict[str, Any]]:
         """
-        Provide popular foods fallback
+        Provide popular foods fallback with SugarPoints format
         """
         popular_foods = [
-            {"id": "pop_apple", "name": "Apple", "sugar_per_100g": 10.4, "calories_per_100g": 52, "category": "Fruits"},
-            {"id": "pop_banana", "name": "Banana", "sugar_per_100g": 12.2, "calories_per_100g": 89, "category": "Fruits"},
-            {"id": "pop_chicken", "name": "Chicken Breast", "sugar_per_100g": 0.0, "calories_per_100g": 165, "category": "Protein"},
-            {"id": "pop_rice", "name": "White Rice", "sugar_per_100g": 0.1, "calories_per_100g": 130, "category": "Grains"},
-            {"id": "pop_bread", "name": "Whole Wheat Bread", "sugar_per_100g": 2.5, "calories_per_100g": 247, "category": "Grains"},
+            {
+                "id": "pop_apple", 
+                "name": "Apple", 
+                "carbs_per_100g": 14.0,
+                "fat_per_100g": 0.2,
+                "protein_per_100g": 0.3,
+                "sugar_per_100g": 10.4, 
+                "category": "Fruits"
+            },
+            {
+                "id": "pop_banana", 
+                "name": "Banana", 
+                "carbs_per_100g": 23.0,
+                "fat_per_100g": 0.3,
+                "protein_per_100g": 1.1,
+                "sugar_per_100g": 12.2, 
+                "category": "Fruits"
+            },
+            {
+                "id": "pop_chicken", 
+                "name": "Chicken Breast", 
+                "carbs_per_100g": 0.0,
+                "fat_per_100g": 3.6,
+                "protein_per_100g": 31.0,
+                "sugar_per_100g": 0.0, 
+                "category": "Protein"
+            },
+            {
+                "id": "pop_rice", 
+                "name": "White Rice", 
+                "carbs_per_100g": 28.0,
+                "fat_per_100g": 0.3,
+                "protein_per_100g": 2.7,
+                "sugar_per_100g": 0.1, 
+                "category": "Grains"
+            },
+            {
+                "id": "pop_bread", 
+                "name": "Whole Wheat Bread", 
+                "carbs_per_100g": 43.0,
+                "fat_per_100g": 3.4,
+                "protein_per_100g": 13.0,
+                "sugar_per_100g": 2.5, 
+                "category": "Grains"
+            },
         ]
         
         if category:
