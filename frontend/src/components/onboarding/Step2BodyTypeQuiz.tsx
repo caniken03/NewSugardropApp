@@ -197,8 +197,13 @@ export default function Step2BodyTypeQuiz({ data, onNext, onBack }: Step2Props) 
   };
 
   const submitQuiz = async () => {
+    console.log('Starting quiz submission...');
+    console.log('Current responses:', responses);
+    
     // Validate all questions answered
     const answeredCount = Object.keys(responses).length;
+    console.log(`Questions answered: ${answeredCount}/15`);
+    
     if (answeredCount < 15) {
       Alert.alert(
         'Incomplete Quiz',
@@ -215,10 +220,13 @@ export default function Step2BodyTypeQuiz({ data, onNext, onBack }: Step2Props) 
         value: responses[q.id]
       }));
 
+      console.log('Submitting quiz responses:', quizResponses);
+
       const response = await apiClient.post('/quiz/submit', {
         responses: quizResponses
       });
 
+      console.log('Quiz API response:', response.data);
       const result = response.data;
       
       // Store quiz result in onboarding data
@@ -230,10 +238,12 @@ export default function Step2BodyTypeQuiz({ data, onNext, onBack }: Step2Props) 
         recommendations: result.recommendations,
       };
 
+      console.log('Calling onNext with step data:', stepData);
       onNext(stepData);
       
     } catch (error: any) {
       console.error('Error submitting quiz:', error);
+      console.error('Error details:', error.response);
       Alert.alert(
         'Quiz Error',
         error.response?.data?.detail || 'Failed to process quiz. Please try again.'
