@@ -277,54 +277,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Health Risk Card
-  healthRiskCard: {
+  // Medical Disclaimer Card
+  disclaimerCard: {
     marginBottom: spacing.xl,
-    backgroundColor: colors.warning[50],
-    borderColor: colors.warning[200],
+    backgroundColor: colors.neutral[50],
+    borderColor: colors.neutral[200],
   },
 
-  healthRiskHeader: {
+  disclaimerHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.md,
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
 
-  healthRiskTitle: {
-    ...typography.titleLarge,
+  disclaimerTitle: {
+    ...typography.labelLarge,
     color: colors.text.primary,
   },
 
-  healthRiskText: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-    lineHeight: 22,
-  },
-
-  // Recommendations Card
-  recommendationsCard: {
-    marginBottom: spacing.xl,
-  },
-
-  recommendationsTitle: {
-    ...typography.titleLarge,
-    color: colors.text.primary,
-    marginBottom: spacing.lg,
-  },
-
-  recommendationItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.md,
-    marginBottom: spacing.md,
-  },
-
-  recommendationText: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-    flex: 1,
-    lineHeight: 22,
+  disclaimerText: {
+    ...typography.bodySmall,
+    color: colors.text.tertiary,
+    lineHeight: 18,
+    fontStyle: 'italic',
   },
 
   // Actions
