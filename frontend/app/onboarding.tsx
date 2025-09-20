@@ -58,12 +58,20 @@ export default function OnboardingScreen() {
   const completeOnboarding = async () => {
     try {
       // Save onboarding data to user profile
-      // await updateUserProfile(onboardingData);
+      await apiClient.put('/user/profile', {
+        age: onboardingData.age,
+        gender: onboardingData.gender,
+        activity_level: onboardingData.activityLevel,
+        health_goals: onboardingData.healthGoals,
+        daily_sugar_points_target: onboardingData.customTarget,
+        completed_onboarding: true,
+      });
       
       // Navigate to main app
       router.replace('/(tabs)/home');
     } catch (error) {
       console.error('Error completing onboarding:', error);
+      Alert.alert('Error', 'Failed to save profile. Please try again.');
     }
   };
 
