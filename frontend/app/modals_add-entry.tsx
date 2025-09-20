@@ -12,9 +12,9 @@ import {
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../src/contexts/AuthContext';
-import { apiClient } from '../../src/services/api';
-import LoadingSpinner from '../../src/components/LoadingSpinner';
+import { useAuth } from '@/contexts/AuthContext';
+import { apiClient } from '@/services/api';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function AddEntryModal() {
   const params = useLocalSearchParams();
