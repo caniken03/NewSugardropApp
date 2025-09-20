@@ -255,8 +255,12 @@ async def create_food_entry(entry_data: FoodEntryCreate, current_user: User = De
         calories=entry_data.calories
     )
     
+    # Convert to dict with proper datetime serialization
+    entry_dict = entry.dict()
+    entry_dict['timestamp'] = entry_dict['timestamp'].isoformat()
+    
     # Insert into Supabase
-    result = supabase.table('food_entries').insert(entry.dict()).execute()
+    result = supabase.table('food_entries').insert(entry_dict).execute()
     if not result.data:
         raise HTTPException(status_code=500, detail="Failed to create food entry")
     
