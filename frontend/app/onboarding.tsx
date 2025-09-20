@@ -76,7 +76,6 @@ export default function OnboardingScreen() {
       await apiClient.put('/user/profile', {
         age: onboardingData.age,
         gender: onboardingData.gender,
-        activity_level: onboardingData.activityLevel,
         health_goals: onboardingData.healthGoals,
         body_type: onboardingData.bodyType,
         sugarpoints_range: onboardingData.sugarpointsRange,
