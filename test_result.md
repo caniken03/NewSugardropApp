@@ -152,15 +152,18 @@ backend:
 
   - task: "Today Entries API Update for SugarPoints" 
     implemented: true
-    working: false
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "unknown"
         agent: "main" 
         comment: "Updated /api/food/entries/today endpoint to return SugarPoints data: total_sugar_points, total_sugar_point_blocks, sugar_points_text, sugar_point_blocks_text. Calculates SugarPoints for existing entries that don't have them stored yet."
+      - working: true
+        agent: "testing"
+        comment: "PASSED: Today entries API returns all required SugarPoints fields. Text formatting correct: '25 SugarPoints' and '4 Blocks'. Aggregation working properly. Nil SugarPoints text displayed for zero carb totals."
 
   - task: "Passio Service Update for Nutrition Extraction"
     implemented: true
