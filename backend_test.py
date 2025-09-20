@@ -599,11 +599,11 @@ class SugarDropAPITester:
     
     def run_all_tests(self):
         """Run all backend tests"""
-        print("🧪 Starting SugarDrop Backend API Tests")
+        print("🧪 Starting SugarDrop Backend API Tests - Passio Integration & Meal Categorization")
         print(f"Backend URL: {self.base_url}")
-        print("=" * 50)
+        print("=" * 70)
         
-        # Test health check first
+        # Test health check first (includes version and Passio integration check)
         self.test_health_check()
         
         # Test authentication
@@ -614,11 +614,21 @@ class SugarDropAPITester:
         # Test registration with new user
         self.test_user_registration()
         
-        # Test food tracking (requires auth)
+        # Test basic food tracking (requires auth)
         if self.auth_token:
             self.test_food_entry_creation()
             self.test_food_entries_list()
-            self.test_today_entries()
+        
+        # Test NEW PASSIO INTEGRATION features (requires auth)
+        if self.auth_token:
+            self.test_passio_food_search()
+            self.test_passio_popular_foods()
+            self.test_food_recognition()
+        
+        # Test NEW MEAL CATEGORIZATION features (requires auth)
+        if self.auth_token:
+            self.test_meal_categorization()
+            self.test_today_entries()  # Updated to test meal grouping
         
         # Test AI chat (requires auth)
         if self.auth_token:
