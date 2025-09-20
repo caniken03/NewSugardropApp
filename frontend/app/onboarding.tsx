@@ -23,7 +23,6 @@ export interface OnboardingData {
   // Step 1 - Health Profile
   age?: number;
   gender?: 'male' | 'female' | 'other';
-  activityLevel?: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active';
   healthGoals?: string[];
   
   // Step 2 - Body Type Quiz Results
