@@ -11,6 +11,7 @@ import { router } from 'expo-router';
 import { colors, typography, spacing, layout } from '@/design-system';
 import { Button, Card } from '@/design-system/components';
 import { apiClient } from '@/services/api';
+import HealthDisclaimerPopup from '@/components/HealthDisclaimerPopup';
 import OnboardingStep1 from '@/components/onboarding/Step1HealthProfile';
 import OnboardingStep2 from '@/components/onboarding/Step2BodyTypeQuiz';
 import OnboardingStep3 from '@/components/onboarding/Step3QuizResults';
@@ -41,8 +42,13 @@ export interface OnboardingData {
 }
 
 export default function OnboardingScreen() {
+  const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
+
+  const handleDisclaimerComplete = () => {
+    setShowDisclaimer(false);
+  };
 
   const updateOnboardingData = (data: Partial<OnboardingData>) => {
     setOnboardingData(prev => ({ ...prev, ...data }));
