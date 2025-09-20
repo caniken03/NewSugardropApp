@@ -26,6 +26,7 @@ export default function AddEntryModal() {
     sugarPer100g: (params.sugarPer100g as string) || '',
     caloriesPer100g: (params.caloriesPer100g as string) || '',
     portionSize: '100',
+    mealType: 'snack',
   });
   const [loading, setLoading] = useState(false);
 
