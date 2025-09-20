@@ -32,137 +32,137 @@ interface QuizQuestion {
 const quizQuestions: QuizQuestion[] = [
   {
     id: 1,
-    question: "How would you describe your natural body frame?",
+    question: "Which best describes your body shape?",
     options: {
-      A: "Naturally thin with narrow shoulders and hips",
-      B: "Athletic build with broad shoulders",
-      C: "Rounder, fuller frame with wider hips"
+      A: "Narrow shoulders and hips, longer limbs",
+      B: "Broad shoulders, well-defined muscles",
+      C: "Rounder, softer physique with a tendency to store fat"
     }
   },
   {
     id: 2,
-    question: "How easily do you gain weight?",
+    question: "How do you typically respond to changes in diet or exercise?",
     options: {
-      A: "Very difficult - I can eat a lot without gaining",
-      B: "Moderate - I gain muscle easily, fat moderately",
-      C: "Very easily - I gain weight quickly"
+      A: "Difficulty gaining weight, even with increased caloric intake",
+      B: "Can easily gain muscle mass or lose weight with adjustments",
+      C: "Tends to gain weight easily and struggles with weight loss"
     }
   },
   {
     id: 3,
-    question: "How easily do you lose weight?",
+    question: "How quickly do you notice changes in muscle definition?",
     options: {
-      A: "Very difficult - I struggle to maintain weight",
-      B: "Moderate - with exercise and diet changes",
-      C: "Difficult - requires significant effort"
+      A: "Slow to develop noticeable muscle definition",
+      B: "Rapid muscle development with training",
+      C: "Gains muscle but may also store fat around muscles"
     }
   },
   {
     id: 4,
-    question: "How would you describe your appetite?",
+    question: "How would you describe your metabolism?",
     options: {
-      A: "Generally low - I often forget to eat",
-      B: "Moderate - hungry at meal times",
-      C: "Strong - I'm often thinking about food"
+      A: "Fast metabolism with difficulty gaining weight",
+      B: "Moderate metabolism with balanced weight maintenance",
+      C: "Slower metabolism with a tendency to gain weight"
     }
   },
   {
     id: 5,
-    question: "How do you respond to carbohydrates?",
+    question: "What is the size of your wrists and ankles?",
     options: {
-      A: "I can eat them freely without much effect",
-      B: "Good for energy, especially around workouts",
-      C: "They tend to make me gain weight or feel sluggish"
+      A: "Small joints",
+      B: "Moderate-sized joints",
+      C: "Large joints"
     }
   },
   {
     id: 6,
-    question: "What's your energy level like throughout the day?",
+    question: "How do you perceive your appetite?",
     options: {
-      A: "Consistent but sometimes anxious or restless",
-      B: "Good energy, especially with regular meals",
-      C: "Tends to fluctuate, afternoon crashes are common"
+      A: "Often have a smaller appetite",
+      B: "Consistent and balanced appetite",
+      C: "Tend to have a larger appetite, especially for carbohydrates"
     }
   },
   {
     id: 7,
-    question: "How would you describe your bone structure?",
+    question: "How would you describe your energy levels throughout the day?",
     options: {
-      A: "Small-boned, delicate wrists and ankles",
-      B: "Medium-boned, proportional frame",
-      C: "Large-boned, thick wrists and ankles"
+      A: "Consistently high energy levels",
+      B: "Moderate and stable energy levels",
+      C: "Energy levels may fluctuate, especially after meals"
     }
   },
   {
     id: 8,
-    question: "How do you typically store body fat?",
+    question: "Where do you tend to store excess fat?",
     options: {
-      A: "Rarely store fat, mostly in midsection if any",
-      B: "Evenly distributed, easier to lose",
-      C: "Lower body (hips, thighs) and midsection"
+      A: "Difficulty gaining fat, lean physique",
+      B: "Even fat distribution with maintained muscle definition",
+      C: "More noticeable fat storage, especially around the midsection"
     }
   },
   {
     id: 9,
-    question: "How would friends describe your metabolism?",
+    question: "How do your shoulders compare to your hips?",
     options: {
-      A: "Fast - 'you can eat anything!'",
-      B: "Normal - responds well to exercise",
-      C: "Slow - 'careful with sweets'"
+      A: "My shoulders are narrower than my hips.",
+      B: "They're approximately the same width as my hips.",
+      C: "My shoulders are wider than my hips."
     }
   },
   {
     id: 10,
-    question: "What happens when you skip meals?",
+    question: "Are you currently diagnosed with prediabetes or type 2 diabetes?",
     options: {
-      A: "I get very hungry, shaky, or irritable",
-      B: "I notice but can function normally",
-      C: "I don't always notice, sometimes feel fine"
+      A: "No, I do not have either condition",
+      B: "I have been diagnosed with prediabetes",
+      C: "I have been diagnosed with type 2 diabetes"
     }
   },
   {
     id: 11,
-    question: "How do you build muscle?",
+    question: "Do you have a family history of prediabetes or type 2 diabetes?",
     options: {
-      A: "Very slowly, requires consistent effort",
-      B: "Relatively easily with regular exercise",
-      C: "Slowly, but I build strength well"
+      A: "No family history",
+      B: "Some family history",
+      C: "Strong family history"
     }
   },
   {
     id: 12,
-    question: "What's your relationship with exercise?",
+    question: "How often do you crave sugary foods or beverages?",
     options: {
-      A: "I prefer cardio, strength training is challenging",
-      B: "I enjoy variety and see results quickly",
-      C: "I prefer steady-state activities, strength training helps"
+      A: "Rarely or never",
+      B: "Occasionally",
+      C: "Frequently or daily"
     }
   },
   {
     id: 13,
-    question: "How do you feel after eating a large meal?",
+    question: "How do you feel after consuming a large amount of sugary foods?",
     options: {
-      A: "Energized and ready to go",
-      B: "Satisfied and comfortable",
-      C: "Full and sometimes sluggish"
+      A: "Satisfied and unaffected",
+      B: "Moderately affected, may experience energy fluctuations",
+      C: "Cravings intensify, may feel irritable or fatigued"
     }
   },
   {
     id: 14,
-    question: "What's your natural sleep pattern?",
+    question: "Have you ever tried to cut down on sugary foods, and how successful were you?",
     options: {
-      A: "Light sleeper, sometimes restless",
-      B: "Good sleep, wake up refreshed",
-      C: "Deep sleeper, need more hours"
+      A: "Never tried or easily successful",
+      B: "Tried but with moderate success",
+      C: "Tried with minimal success, find it challenging to resist sugar"
     }
   },
   {
     id: 15,
-    question: "How do you handle stress?",
+    question: "How often do you think about consuming sugary foods during the day?",
     options: {
-      A: "Tend to lose appetite or get anxious",
-      B: "Generally manage well with outlets",
-      C: "Sometimes eat more or crave comfort foods"
+      A: "Rarely or never",
+      B: "Occasionally",
+      C: "Frequently or obsessively"
     }
   }
 ];
