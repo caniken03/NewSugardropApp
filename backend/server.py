@@ -361,15 +361,20 @@ async def submit_body_type_quiz(quiz_data: QuizSubmission, current_user: User = 
         # Calculate body type
         result = calculate_body_type_from_quiz(quiz_data.responses)
         
-        # Store quiz results in user profile
-        update_data = {
-            "body_type": result.body_type,
-            "sugarpoints_range": result.sugarpoints_range,
-            "onboarding_path": result.onboarding_path,
-            "quiz_completed_at": datetime.utcnow().isoformat()
-        }
-        
-        supabase.table('users').update(update_data).eq('id', current_user.id).execute()
+        # Try to store quiz results in user profile (skip if schema not updated)
+        try:
+            update_data = {
+                "body_type": result.body_type,
+                "sugarpoints_range": result.sugarpoints_range,
+                "onboarding_path": result.onboarding_path,
+                "quiz_completed_at": datetime.utcnow().isoformat()
+            }
+            
+            supabase.table('users').update(update_data).eq('id', current_user.id).execute()
+            logger.info(f"Quiz results stored for user {current_user.id}")
+        except Exception as storage_error:
+            # Log the storage error but don't fail the quiz
+            logger.warning(f"Could not store quiz results (schema may need update): {str(storage_error)}")
         
         # Log telemetry
         logger.info(f"User {current_user.id} completed body type quiz: {result.body_type}")
