@@ -153,14 +153,14 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <View style={styles.divider}>
-            <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-            <Text style={[styles.dividerText, { color: colors.textSecondary }]}>or</Text>
-            <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+            <View style={toStyle([styles.dividerLine, { backgroundColor: colors.border }])} />
+            <Text style={toStyle([styles.dividerText, { color: colors.textSecondary }])}>or</Text>
+            <View style={toStyle([styles.dividerLine, { backgroundColor: colors.border }])} />
           </View>
 
           <Link href="/auth/register" asChild>
-            <TouchableOpacity style={[styles.registerButton, { borderColor: colors.border }]}>
-              <Text style={[styles.registerButtonText, { color: colors.text }]}>
+            <TouchableOpacity style={toStyle([styles.registerButton, { borderColor: colors.border }])}>
+              <Text style={toStyle([styles.registerButtonText, { color: colors.text }])}>
                 Create New Account
               </Text>
             </TouchableOpacity>
@@ -168,9 +168,9 @@ export default function LoginScreen() {
         </View>
 
         {/* Demo Credentials */}
-        <View style={[styles.demoContainer, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.demoTitle, { color: colors.text }]}>Demo Account</Text>
-          <Text style={[styles.demoText, { color: colors.textSecondary }]}>
+        <View style={toStyle([styles.demoContainer, { backgroundColor: colors.surface }])}>
+          <Text style={toStyle([styles.demoTitle, { color: colors.text }])}>Demo Account</Text>
+          <Text style={toStyle([styles.demoText, { color: colors.textSecondary }])}>
             Email: demo@sugardrop.com{'\n'}
             Password: demo123
           </Text>
