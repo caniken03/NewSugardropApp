@@ -23,8 +23,9 @@ export default function AddEntryModal() {
   
   const [formData, setFormData] = useState({
     name: (params.foodName as string) || '',
-    sugarPer100g: (params.sugarPer100g as string) || '',
-    caloriesPer100g: (params.caloriesPer100g as string) || '',
+    carbsPer100g: (params.carbs_per_100g as string) || (params.sugarPer100g as string) || '',
+    fatPer100g: (params.fat_per_100g as string) || '',
+    proteinPer100g: (params.protein_per_100g as string) || '',
     portionSize: '100',
     mealType: 'snack',
   });
@@ -34,32 +35,45 @@ export default function AddEntryModal() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const calculateTotalSugar = () => {
-    const sugarPer100g = parseFloat(formData.sugarPer100g) || 0;
+  const calculateSugarPoints = () => {
+    const carbsPer100g = parseFloat(formData.carbsPer100g) || 0;
     const portionSize = parseFloat(formData.portionSize) || 0;
-    return (sugarPer100g * portionSize) / 100;
+    const totalCarbs = (carbsPer100g * portionSize) / 100;
+    return Math.round(totalCarbs);
   };
 
-  const calculateTotalCalories = () => {
-    const caloriesPer100g = parseFloat(formData.caloriesPer100g) || 0;
+  const calculateSugarPointBlocks = () => {
+    const sugarPoints = calculateSugarPoints();
+    return Math.round(sugarPoints / 6);
+  };
+
+  const calculateTotalFat = () => {
+    const fatPer100g = parseFloat(formData.fatPer100g) || 0;
     const portionSize = parseFloat(formData.portionSize) || 0;
-    return (caloriesPer100g * portionSize) / 100;
+    return (fatPer100g * portionSize) / 100;
+  };
+
+  const calculateTotalProtein = () => {
+    const proteinPer100g = parseFloat(formData.proteinPer100g) || 0;
+    const portionSize = parseFloat(formData.portionSize) || 0;
+    return (proteinPer100g * portionSize) / 100;
   };
 
   const handleSave = async () => {
-    const { name, sugarPer100g, portionSize, caloriesPer100g } = formData;
+    const { name, carbsPer100g, fatPer100g, proteinPer100g, portionSize } = formData;
 
     if (!name.trim()) {
       Alert.alert('Error', 'Please enter a food name');
       return;
     }
 
-    const sugarValue = parseFloat(sugarPer100g);
+    const carbsValue = parseFloat(carbsPer100g);
+    const fatValue = parseFloat(fatPer100g) || 0;
+    const proteinValue = parseFloat(proteinPer100g) || 0;
     const portionValue = parseFloat(portionSize);
-    const caloriesValue = parseFloat(caloriesPer100g) || 0;
 
-    if (isNaN(sugarValue) || sugarValue < 0) {
-      Alert.alert('Error', 'Please enter a valid sugar content');
+    if (isNaN(carbsValue) || carbsValue < 0) {
+      Alert.alert('Error', 'Please enter a valid carbohydrate content');
       return;
     }
 
@@ -72,9 +86,10 @@ export default function AddEntryModal() {
     try {
       await apiClient.post('/food/entries', {
         name: name.trim(),
-        sugar_content: sugarValue / 100, // Convert to sugar per gram
+        carbs_per_100g: carbsValue,
+        fat_per_100g: fatValue,
+        protein_per_100g: proteinValue,
         portion_size: portionValue,
-        calories: caloriesValue > 0 ? caloriesValue / 100 : null, // Convert to calories per gram
         meal_type: formData.mealType,
       });
 
@@ -96,19 +111,37 @@ export default function AddEntryModal() {
     return <LoadingSpinner />;
   }
 
+  const sugarPoints = calculateSugarPoints();
+  const sugarPointBlocks = calculateSugarPointBlocks();
+  const totalFat = calculateTotalFat();
+  const totalProtein = calculateTotalProtein();
+
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={[styles.container, { backgroundColor: '#0c0c0c' }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         style={styles.scrollContent}
         contentContainerStyle={styles.scrollContentContainer}
         showsVerticalScrollIndicator={false}>
         
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => router.back()}>
+            <Ionicons name="close" size={24} color="#9CA3AF" />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: '#fff' }]}>
+            Add Food Entry
+          </Text>
+          <View style={styles.headerSpacer} />
+        </View>
+
         {/* Form */}
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>
+            <Text style={[styles.label, { color: '#fff' }]}>
               Meal Type
             </Text>
             <View style={styles.mealTypeContainer}>
@@ -123,21 +156,21 @@ export default function AddEntryModal() {
                   style={[
                     styles.mealTypeButton,
                     {
-                      backgroundColor: formData.mealType === meal.key ? colors.primary : colors.surface,
-                      borderColor: colors.border,
+                      backgroundColor: formData.mealType === meal.key ? '#2563EB' : '#111827',
+                      borderColor: '#374151',
                     },
                   ]}
                   onPress={() => updateFormData('mealType', meal.key)}>
                   <Ionicons
                     name={meal.icon as any}
                     size={20}
-                    color={formData.mealType === meal.key ? '#ffffff' : colors.text}
+                    color={formData.mealType === meal.key ? '#ffffff' : '#E5E7EB'}
                   />
                   <Text
                     style={[
                       styles.mealTypeText,
                       {
-                        color: formData.mealType === meal.key ? '#ffffff' : colors.text,
+                        color: formData.mealType === meal.key ? '#ffffff' : '#E5E7EB',
                       },
                     ]}>
                     {meal.label}
@@ -148,126 +181,147 @@ export default function AddEntryModal() {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Food Name</Text>
+            <Text style={[styles.label, { color: '#fff' }]}>Food Name</Text>
             <TextInput
               style={[
                 styles.input,
                 {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  color: colors.text,
+                  backgroundColor: '#111827',
+                  borderColor: '#374151',
+                  color: '#E5E7EB',
                 },
               ]}
               value={formData.name}
               onChangeText={(value) => updateFormData('name', value)}
-              placeholder="e.g., Apple, Chocolate Bar"
-              placeholderTextColor={colors.textSecondary}
+              placeholder="e.g., Apple, Chicken Breast, Brown Rice"
+              placeholderTextColor="#9CA3AF"
               autoCapitalize="words"
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>
-              Sugar Content (per 100g)
+            <Text style={[styles.label, { color: '#fff' }]}>
+              Carbohydrates (per 100g)
             </Text>
             <TextInput
               style={[
                 styles.input,
                 {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  color: colors.text,
+                  backgroundColor: '#111827',
+                  borderColor: '#374151',
+                  color: '#E5E7EB',
                 },
               ]}
-              value={formData.sugarPer100g}
-              onChangeText={(value) => updateFormData('sugarPer100g', value)}
-              placeholder="e.g., 10.4"
-              placeholderTextColor={colors.textSecondary}
+              value={formData.carbsPer100g}
+              onChangeText={(value) => updateFormData('carbsPer100g', value)}
+              placeholder="e.g., 14.0"
+              placeholderTextColor="#9CA3AF"
               keyboardType="decimal-pad"
             />
-            <Text style={[styles.helperText, { color: colors.textSecondary }]}>
-              Check nutrition label or search online
+            <Text style={[styles.helperText, { color: '#9CA3AF' }]}>
+              Check nutrition label for total carbohydrates
             </Text>
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>
-              Calories (per 100g) - Optional
+            <Text style={[styles.label, { color: '#fff' }]}>
+              Fat (per 100g)
             </Text>
             <TextInput
               style={[
                 styles.input,
                 {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  color: colors.text,
+                  backgroundColor: '#111827',
+                  borderColor: '#374151',
+                  color: '#E5E7EB',
                 },
               ]}
-              value={formData.caloriesPer100g}
-              onChangeText={(value) => updateFormData('caloriesPer100g', value)}
-              placeholder="e.g., 52"
-              placeholderTextColor={colors.textSecondary}
+              value={formData.fatPer100g}
+              onChangeText={(value) => updateFormData('fatPer100g', value)}
+              placeholder="e.g., 0.2"
+              placeholderTextColor="#9CA3AF"
               keyboardType="decimal-pad"
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>
+            <Text style={[styles.label, { color: '#fff' }]}>
+              Protein (per 100g)
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: '#111827',
+                  borderColor: '#374151',
+                  color: '#E5E7EB',
+                },
+              ]}
+              value={formData.proteinPer100g}
+              onChangeText={(value) => updateFormData('proteinPer100g', value)}
+              placeholder="e.g., 0.3"
+              placeholderTextColor="#9CA3AF"
+              keyboardType="decimal-pad"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: '#fff' }]}>
               Portion Size (grams)
             </Text>
             <TextInput
               style={[
                 styles.input,
                 {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  color: colors.text,
+                  backgroundColor: '#111827',
+                  borderColor: '#374151',
+                  color: '#E5E7EB',
                 },
               ]}
               value={formData.portionSize}
               onChangeText={(value) => updateFormData('portionSize', value)}
               placeholder="e.g., 150"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor="#9CA3AF"
               keyboardType="decimal-pad"
             />
-            <Text style={[styles.helperText, { color: colors.textSecondary }]}>
+            <Text style={[styles.helperText, { color: '#9CA3AF' }]}>
               Weight of the portion you consumed
             </Text>
           </View>
         </View>
 
-        {/* Summary */}
-        <View style={[styles.summaryContainer, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.summaryTitle, { color: colors.text }]}>
+        {/* SugarPoints Summary */}
+        <View style={[styles.summaryContainer, { backgroundColor: '#111827' }]}>
+          <Text style={[styles.summaryTitle, { color: '#fff' }]}>
             Nutrition Summary
           </Text>
           
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
-              Total Sugar:
+          {/* SugarPoints Display */}
+          <View style={styles.sugarPointsDisplay}>
+            <Text style={[styles.sugarPointsAmount, { color: '#2563EB' }]}>
+              {sugarPoints === 0 ? 'Nil SugarPoints' : `${sugarPoints} SugarPoints`}
             </Text>
-            <Text style={[styles.summaryValue, { color: colors.primary }]}>
-              {calculateTotalSugar().toFixed(1)}g
-            </Text>
+            {sugarPoints > 0 && (
+              <Text style={[styles.sugarPointsBlocks, { color: '#E5E7EB' }]}>
+                {sugarPointBlocks} Blocks
+              </Text>
+            )}
           </View>
 
-          {formData.caloriesPer100g && (
-            <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
-                Total Calories:
+          {/* Nutrition Details */}
+          <View style={styles.nutritionDetails}>
+            {totalFat > 0 && (
+              <Text style={[styles.nutritionText, { color: '#E5E7EB' }]}>
+                Fat: {totalFat.toFixed(1)}g
               </Text>
-              <Text style={[styles.summaryValue, { color: colors.text }]}>
-                {calculateTotalCalories().toFixed(0)} cal
+            )}
+            {totalProtein > 0 && (
+              <Text style={[styles.nutritionText, { color: '#E5E7EB' }]}>
+                Protein: {totalProtein.toFixed(1)}g
               </Text>
-            </View>
-          )}
-
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
-              Portion:
-            </Text>
-            <Text style={[styles.summaryValue, { color: colors.text }]}>
-              {formData.portionSize}g
+            )}
+            <Text style={[styles.nutritionText, { color: '#E5E7EB' }]}>
+              Portion: {formData.portionSize}g
             </Text>
           </View>
         </View>
@@ -275,15 +329,15 @@ export default function AddEntryModal() {
         {/* Action Buttons */}
         <View style={styles.actions}>
           <TouchableOpacity
-            style={[styles.cancelButton, { borderColor: colors.border }]}
+            style={[styles.cancelButton, { borderColor: '#374151', backgroundColor: '#111827' }]}
             onPress={() => router.back()}>
-            <Text style={[styles.cancelButtonText, { color: colors.text }]}>
+            <Text style={[styles.cancelButtonText, { color: '#E5E7EB' }]}>
               Cancel
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.saveButton, { backgroundColor: colors.primary }]}
+            style={[styles.saveButton, { backgroundColor: '#2563EB' }]}
             onPress={handleSave}
             disabled={loading}>
             <Text style={styles.saveButtonText}>Save Entry</Text>
@@ -302,53 +356,84 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContentContainer: {
-    padding: 20,
+    padding: 16,
     paddingBottom: 40,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    paddingTop: 8,
+  },
+  closeButton: {
+    padding: 8,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  headerSpacer: {
+    width: 40,
   },
   form: {
     marginBottom: 24,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   label: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '700',
     marginBottom: 8,
   },
   input: {
     height: 48,
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     fontSize: 16,
+    fontWeight: '400',
   },
   helperText: {
     fontSize: 12,
+    fontWeight: '400',
     marginTop: 4,
   },
   summaryContainer: {
-    borderRadius: 12,
+    borderRadius: 10,
     padding: 16,
     marginBottom: 24,
+    borderColor: '#374151',
+    borderWidth: 1,
   },
   summaryTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontWeight: '700',
+    marginBottom: 16,
   },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  sugarPointsDisplay: {
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 16,
   },
-  summaryLabel: {
-    fontSize: 16,
+  sugarPointsAmount: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 4,
   },
-  summaryValue: {
-    fontSize: 16,
-    fontWeight: '600',
+  sugarPointsBlocks: {
+    fontSize: 14,
+    fontWeight: '400',
+  },
+  nutritionDetails: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    justifyContent: 'center',
+  },
+  nutritionText: {
+    fontSize: 14,
+    fontWeight: '400',
   },
   actions: {
     flexDirection: 'row',
@@ -357,26 +442,26 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     height: 48,
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelButtonText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   saveButton: {
     flex: 1,
     height: 48,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   saveButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   mealTypeContainer: {
     flexDirection: 'row',
@@ -389,12 +474,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: 999, // Pill shape
     borderWidth: 1,
     gap: 6,
   },
   mealTypeText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '400',
   },
 });
