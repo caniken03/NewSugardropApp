@@ -62,8 +62,8 @@ export default function WelcomeScreen() {
         {/* Actions */}
         <View style={styles.actions}>
           <Button
-            title="Get Started"
-            onPress={() => router.push('/onboarding')}
+            title="Create Account First"
+            onPress={() => router.push('/auth/register')}
             size="large"
             fullWidth
           />
