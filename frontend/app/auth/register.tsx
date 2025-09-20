@@ -59,7 +59,8 @@ export default function RegisterScreen() {
     setLoading(true);
     try {
       await register(email.trim(), password, name.trim(), goal);
-      router.replace('/(tabs)/home');
+      // Redirect to onboarding for new users
+      router.replace('/onboarding');
     } catch (error: any) {
       Alert.alert(
         'Registration Failed',
