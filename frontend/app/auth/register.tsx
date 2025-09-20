@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { toStyle } from '../../src/utils/styles';
 import LoadingSpinner from '../../src/components/LoadingSpinner';
 
 export default function RegisterScreen() {
