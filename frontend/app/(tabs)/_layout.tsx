@@ -6,6 +6,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        animation: 'shift',
         tabBarActiveTintColor: colors.primary[400],
         tabBarInactiveTintColor: colors.text.tertiary,
         tabBarStyle: {
@@ -47,6 +48,10 @@ export default function TabLayout() {
           color: colors.text.primary,
         },
         headerTitleAlign: 'center',
+        headerShadowVisible: false,
+        sceneContainerStyle: {
+          backgroundColor: colors.background,
+        },
       }}>
       <Tabs.Screen
         name="home"
