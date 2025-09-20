@@ -220,12 +220,27 @@ async def create_food_entry(entry_data: FoodEntryCreate, current_user: User = De
     entry_dict = entry.dict()
     entry_dict['timestamp'] = entry_dict['timestamp'].isoformat()
     
-    # Insert into Supabase
-    result = supabase.table('food_entries').insert(entry_dict).execute()
-    if not result.data:
-        raise HTTPException(status_code=500, detail="Failed to create food entry")
-    
-    return entry
+    # Try to insert with meal_type, if it fails, insert without it
+    try:
+        result = supabase.table('food_entries').insert(entry_dict).execute()
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Failed to create food entry")
+        return entry
+    except Exception as e:
+        # If meal_type column doesn't exist, try without it
+        if "meal_type" in str(e):
+            logger.warning("meal_type column not found, inserting without it")
+            entry_dict_no_meal = entry_dict.copy()
+            del entry_dict_no_meal['meal_type']
+            
+            result = supabase.table('food_entries').insert(entry_dict_no_meal).execute()
+            if not result.data:
+                raise HTTPException(status_code=500, detail="Failed to create food entry")
+            
+            # Return entry with meal_type for API consistency
+            return entry
+        else:
+            raise HTTPException(status_code=500, detail=f"Failed to create food entry: {str(e)}")
 
 @api_router.get("/food/entries", response_model=List[FoodEntry])
 async def get_food_entries(current_user: User = Depends(get_current_user)):
