@@ -51,10 +51,13 @@ export default function RegisterScreen() {
 
     setLoading(true);
     try {
+      console.log('Starting registration...');
       await register(email.trim(), password, name.trim(), 100); // Default SugarPoints goal
+      console.log('Registration successful, redirecting to onboarding...');
       // Redirect to onboarding for new users
       router.replace('/onboarding');
     } catch (error: any) {
+      console.error('Registration error:', error);
       Alert.alert(
         'Registration Failed',
         error.response?.data?.detail || 'Please try again'
