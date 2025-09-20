@@ -41,15 +41,31 @@ class SugarDropAPITester:
             print(f"❌ {test_name}: {error_msg}")
     
     def test_health_check(self):
-        """Test health check endpoint"""
+        """Test health check endpoint and verify version 2.1.0 with Passio integration"""
         print("\n=== Testing Health Check API ===")
         try:
             response = requests.get(f"{self.base_url}/health", timeout=10)
             if response.status_code == 200:
                 data = response.json()
                 if "status" in data and data["status"] == "healthy":
+                    # Check version is 2.1.0
+                    version = data.get("version")
+                    if version == "2.1.0":
+                        self.log_result("health_check", "API version 2.1.0", True)
+                    else:
+                        self.log_result("health_check", "API version 2.1.0", False, f"Expected 2.1.0, got {version}")
+                    
+                    # Check Passio integration is enabled
+                    features = data.get("features", {})
+                    passio_integration = features.get("passio_integration", False)
+                    if passio_integration:
+                        self.log_result("health_check", "Passio integration enabled", True)
+                    else:
+                        self.log_result("health_check", "Passio integration enabled", False, "passio_integration is false")
+                    
                     self.log_result("health_check", "Health check endpoint", True)
-                    print(f"   Features: {data.get('features', {})}")
+                    print(f"   Version: {version}")
+                    print(f"   Features: {features}")
                 else:
                     self.log_result("health_check", "Health check endpoint", False, "Invalid response format")
             else:
