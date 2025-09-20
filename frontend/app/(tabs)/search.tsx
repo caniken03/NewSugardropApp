@@ -421,11 +421,12 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
-    elevation: 1,
-    shadowColor: '#000',
+    // Use web-compatible shadow instead of React Native shadow properties
+    shadowColor: 'rgba(0, 0, 0, 0.05)',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 1,
     shadowRadius: 2,
+    // Remove elevation as it's Android-specific and causes web issues
   },
   foodInfo: {
     flex: 1,
