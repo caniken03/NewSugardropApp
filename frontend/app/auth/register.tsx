@@ -19,7 +19,6 @@ import { Button, Card } from '@/design-system/components';
 
 export default function RegisterScreen() {
   const { register } = useAuth();
-  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   
   const [formData, setFormData] = useState({
