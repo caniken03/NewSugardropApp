@@ -235,6 +235,87 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+# User profile routes
+@api_router.put("/user/profile")
+async def update_user_profile(profile_data: UserProfileUpdate, current_user: User = Depends(get_current_user)):
+    """
+    Update user profile with onboarding data
+    """
+    try:
+        # Prepare update data
+        update_fields = {}
+        
+        if profile_data.age is not None:
+            update_fields['age'] = profile_data.age
+        if profile_data.gender is not None:
+            update_fields['gender'] = profile_data.gender
+        if profile_data.activity_level is not None:
+            update_fields['activity_level'] = profile_data.activity_level
+        if profile_data.health_goals is not None:
+            update_fields['health_goals'] = profile_data.health_goals
+        if profile_data.daily_sugar_points_target is not None:
+            update_fields['daily_sugar_points_target'] = profile_data.daily_sugar_points_target
+        if profile_data.completed_onboarding is not None:
+            update_fields['completed_onboarding'] = profile_data.completed_onboarding
+        
+        # Update user in Supabase
+        result = supabase.table('users').update(update_fields).eq('id', current_user.id).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Failed to update user profile")
+        
+        # Return updated user data
+        updated_user_data = result.data[0]
+        return {
+            "message": "Profile updated successfully",
+            "user": {
+                "id": updated_user_data["id"],
+                "email": updated_user_data["email"],
+                "name": updated_user_data["name"],
+                "daily_sugar_goal": updated_user_data.get("daily_sugar_goal", 50.0),
+                "daily_sugar_points_target": updated_user_data.get("daily_sugar_points_target", 100),
+                "age": updated_user_data.get("age"),
+                "gender": updated_user_data.get("gender"),
+                "activity_level": updated_user_data.get("activity_level"),
+                "health_goals": updated_user_data.get("health_goals", []),
+                "completed_onboarding": updated_user_data.get("completed_onboarding", False),
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error updating user profile: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update profile")
+
+@api_router.get("/user/profile")
+async def get_user_profile(current_user: User = Depends(get_current_user)):
+    """
+    Get complete user profile including onboarding data
+    """
+    try:
+        result = supabase.table('users').select('*').eq('id', current_user.id).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user_data = result.data[0]
+        return {
+            "id": user_data["id"],
+            "email": user_data["email"],
+            "name": user_data["name"],
+            "daily_sugar_goal": user_data.get("daily_sugar_goal", 50.0),
+            "daily_sugar_points_target": user_data.get("daily_sugar_points_target", 100),
+            "age": user_data.get("age"),
+            "gender": user_data.get("gender"),
+            "activity_level": user_data.get("activity_level"),
+            "health_goals": user_data.get("health_goals", []),
+            "completed_onboarding": user_data.get("completed_onboarding", False),
+            "created_at": user_data["created_at"],
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching user profile: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch profile")
+
 # Auth routes
 @api_router.post("/auth/register", response_model=Token)
 async def register(user_data: UserCreate):
