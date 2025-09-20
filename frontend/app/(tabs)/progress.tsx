@@ -417,7 +417,6 @@ const styles = StyleSheet.create({
     padding: 20,
     ...webSafeShadow.medium,
   },
-  },
   entryItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
