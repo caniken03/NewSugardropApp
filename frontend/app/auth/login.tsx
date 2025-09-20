@@ -86,6 +86,37 @@ export default function LoginScreen() {
     backgroundColor: colors.primary,
   };
 
+  const containerStyle = {
+    flex: 1,
+    backgroundColor: colors.background,
+  };
+
+  const scrollContentStyle = {
+    flexGrow: 1,
+    padding: 24,
+    paddingTop: insets.top + 40,
+  };
+
+  const inputStyle = {
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    color: colors.text,
+  };
+
+  const buttonStyle = {
+    height: 52,
+    borderRadius: 12,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginBottom: 24,
+    backgroundColor: colors.primary,
+  };
+
   return (
     <KeyboardAvoidingView
       style={containerStyle}
