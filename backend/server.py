@@ -254,6 +254,137 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+# Body Type Quiz Engine
+def calculate_body_type_from_quiz(responses: List[QuizResponse]) -> QuizResult:
+    """
+    Calculate body type based on 15-question quiz responses
+    Scoring: Most frequent response (A/B/C) determines body type
+    Ties result in Hybrid classification
+    """
+    
+    # Validate input
+    if len(responses) != 15:
+        raise ValueError("Quiz must have exactly 15 responses")
+    
+    # Count responses
+    counts = {"A": 0, "B": 0, "C": 0}
+    for response in responses:
+        value = response.value.upper()
+        if value not in counts:
+            raise ValueError(f"Invalid response value: {value}. Must be A, B, or C")
+        counts[value] += 1
+    
+    # Determine body type based on most frequent response
+    max_count = max(counts.values())
+    winners = [key for key, count in counts.items() if count == max_count]
+    
+    # Handle ties (any tie = Hybrid)
+    if len(winners) > 1:
+        body_type = "Hybrid"
+        sugarpoints_range = "75–125"
+        onboarding_path = "Balanced"
+        health_risk = "Varied metabolism - monitor patterns closely"
+        recommendations = [
+            "Try different SugarPoints targets to find your sweet spot",
+            "Track how different foods affect your energy levels"
+        ]
+    else:
+        # Single winner - determine body type
+        winner = winners[0]
+        if winner == "A":
+            # Ectomorph - Fast metabolism
+            body_type = "Ectomorph"
+            sugarpoints_range = "100–125"
+            onboarding_path = "High Energy"
+            health_risk = "Low risk but potential for 'skinny fat' without proper nutrition"
+            recommendations = [
+                "Focus on nutrient-dense carbohydrates for sustained energy",
+                "Don't skip meals - maintain consistent SugarPoints intake"
+            ]
+        elif winner == "B":
+            # Mesomorph - Balanced metabolism
+            body_type = "Mesomorph"
+            sugarpoints_range = "75–100"
+            onboarding_path = "Standard"
+            health_risk = "Moderate risk - generally responsive to lifestyle changes"
+            recommendations = [
+                "Maintain balanced nutrition with moderate SugarPoints",
+                "Regular exercise enhances your natural metabolic advantages"
+            ]
+        else:  # winner == "C"
+            # Endomorph - Slower metabolism
+            body_type = "Endomorph"
+            sugarpoints_range = "50–75"
+            onboarding_path = "Conservative"
+            health_risk = "Higher risk for metabolic issues - benefit from lower carb approach"
+            recommendations = [
+                "Lower SugarPoints targets may help with weight management",
+                "Focus on protein and healthy fats to feel satisfied"
+            ]
+    
+    # Log results for telemetry
+    logger.info(f"Body type quiz completed: {body_type}, range: {sugarpoints_range}, counts: {counts}")
+    logger.debug(f"Quiz score breakdown: A={counts['A']}, B={counts['B']}, C={counts['C']}")
+    
+    return QuizResult(
+        body_type=body_type,
+        sugarpoints_range=sugarpoints_range,
+        onboarding_path=onboarding_path,
+        health_risk=health_risk,
+        recommendations=recommendations,
+        score_breakdown=counts
+    )
+
+# Quiz routes
+@api_router.post("/quiz/submit", response_model=QuizResult)
+async def submit_body_type_quiz(quiz_data: QuizSubmission, current_user: User = Depends(get_current_user)):
+    """
+    Submit body type quiz and get personalized results
+    """
+    try:
+        # Validate quiz submission
+        if len(quiz_data.responses) != 15:
+            raise HTTPException(
+                status_code=400, 
+                detail="Please answer all questions to receive your personalized results."
+            )
+        
+        # Validate question IDs (1-15)
+        question_ids = [r.question_id for r in quiz_data.responses]
+        expected_ids = list(range(1, 16))
+        if sorted(question_ids) != expected_ids:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid quiz submission - missing questions detected."
+            )
+        
+        # Calculate body type
+        result = calculate_body_type_from_quiz(quiz_data.responses)
+        
+        # Store quiz results in user profile
+        update_data = {
+            "body_type": result.body_type,
+            "sugarpoints_range": result.sugarpoints_range,
+            "onboarding_path": result.onboarding_path,
+            "quiz_completed_at": datetime.utcnow().isoformat()
+        }
+        
+        supabase.table('users').update(update_data).eq('id', current_user.id).execute()
+        
+        # Log telemetry
+        logger.info(f"User {current_user.id} completed body type quiz: {result.body_type}")
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Quiz submission error: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail="We had trouble processing your quiz. Try again shortly."
+        )
+
 # User profile routes
 @api_router.put("/user/profile")
 async def update_user_profile(profile_data: UserProfileUpdate, current_user: User = Depends(get_current_user)):
