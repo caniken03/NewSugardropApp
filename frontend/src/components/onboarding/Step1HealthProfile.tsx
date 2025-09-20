@@ -79,8 +79,7 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
   const canProceed = () => {
     switch (currentQuestion) {
       case 0: return age && gender;
-      case 1: return activityLevel;
-      case 2: return healthGoals.length > 0;
+      case 1: return healthGoals.length > 0;
       default: return false;
     }
   };
@@ -93,7 +92,6 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
       const stepData: Partial<OnboardingData> = {
         age: age ? parseInt(age) : undefined,
         gender: gender as any,
-        activityLevel: activityLevel as any,
         healthGoals,
       };
       onNext(stepData);
