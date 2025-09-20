@@ -51,7 +51,7 @@ export default function OnboardingScreen() {
   const handleNext = (stepData: Partial<OnboardingData>) => {
     updateOnboardingData(stepData);
     
-    if (currentStep < 3) {
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     } else {
       // Complete onboarding
@@ -73,6 +73,9 @@ export default function OnboardingScreen() {
         gender: onboardingData.gender,
         activity_level: onboardingData.activityLevel,
         health_goals: onboardingData.healthGoals,
+        body_type: onboardingData.bodyType,
+        sugarpoints_range: onboardingData.sugarpointsRange,
+        onboarding_path: onboardingData.onboardingPath,
         daily_sugar_points_target: onboardingData.customTarget,
         completed_onboarding: true,
       });
@@ -87,7 +90,7 @@ export default function OnboardingScreen() {
 
   const renderStepIndicator = () => (
     <View style={styles.stepIndicator}>
-      {[1, 2, 3].map((step) => (
+      {[1, 2, 3, 4].map((step) => (
         <View
           key={step}
           style={[
@@ -121,6 +124,14 @@ export default function OnboardingScreen() {
       case 3:
         return (
           <OnboardingStep3
+            data={onboardingData}
+            onNext={handleNext}
+            onBack={handleBack}
+          />
+        );
+      case 4:
+        return (
+          <OnboardingStep4
             data={onboardingData}
             onNext={handleNext}
             onBack={handleBack}
