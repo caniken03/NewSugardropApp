@@ -204,38 +204,21 @@ const styles = StyleSheet.create({
     ...typography.displayMedium,
     color: colors.text.primary,
     fontWeight: '700',
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
 
-  bodyTypeTitle: {
+  bodyTypeRange: {
     ...typography.headlineSmall,
     color: colors.text.secondary,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
+    textAlign: 'center',
   },
 
   bodyTypeDescription: {
-    ...typography.bodyLarge,
+    ...typography.bodyMedium,
     color: colors.text.secondary,
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: spacing.xl,
-  },
-
-  characteristicsList: {
-    gap: spacing.md,
-    alignSelf: 'stretch',
-  },
-
-  characteristicItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-
-  characteristicText: {
-    ...typography.bodyMedium,
-    color: colors.text.primary,
-    flex: 1,
   },
 
   // Recommendation Card
