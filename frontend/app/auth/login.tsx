@@ -20,7 +20,6 @@ import { Button, Card } from '@/design-system/components';
 
 export default function LoginScreen() {
   const { login } = useAuth();
-  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   
   const [email, setEmail] = useState('');
@@ -49,7 +48,11 @@ export default function LoginScreen() {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
+        <LoadingSpinner />
+      </View>
+    );
   }
 
   const containerStyle = {
