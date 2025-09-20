@@ -137,15 +137,18 @@ backend:
 
   - task: "Food Entry Creation API Update"
     implemented: true
-    working: false
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high" 
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "unknown"
         agent: "main"
         comment: "Updated /api/food/entries POST endpoint to calculate and store SugarPoints. Added backward compatibility for legacy sugar_content field. Includes error handling for missing database columns."
+      - working: true
+        agent: "testing"
+        comment: "PASSED: Food entry creation API working correctly. SugarPoints calculated and stored properly. Backward compatibility verified - legacy sugar_content field (0.25) correctly converted to 25g carbs_per_100g and 25 SugarPoints. Database schema fallback functional."
 
   - task: "Today Entries API Update for SugarPoints" 
     implemented: true
