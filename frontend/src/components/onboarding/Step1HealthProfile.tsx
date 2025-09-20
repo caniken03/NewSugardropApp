@@ -59,6 +59,67 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
   const [activityLevel, setActivityLevel] = useState(data.activityLevel || '');
   const [healthGoals, setHealthGoals] = useState<string[]>(data.healthGoals || []);
 
+export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props) {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [age, setAge] = useState(data.age?.toString() || '');
+  const [gender, setGender] = useState(data.gender || '');
+  const [activityLevel, setActivityLevel] = useState(data.activityLevel || '');
+  const [healthGoals, setHealthGoals] = useState<string[]>(data.healthGoals || []);
+
+  const questions = [
+    {
+      id: 'age_gender',
+      title: 'Tell us about yourself',
+      type: 'age_gender' as const,
+    },
+    {
+      id: 'activity',
+      title: 'What's your activity level?',
+      subtitle: 'This helps us recommend your daily SugarPoints target',
+      type: 'activity' as const,
+    },
+    {
+      id: 'goals',
+      title: 'What are your health goals?',
+      subtitle: 'Select all that apply (you can change these later)',
+      type: 'goals' as const,
+    }
+  ];
+
+  const currentQ = questions[currentQuestion];
+
+  const canProceed = () => {
+    switch (currentQuestion) {
+      case 0: return age && gender;
+      case 1: return activityLevel;
+      case 2: return healthGoals.length > 0;
+      default: return false;
+    }
+  };
+
+  const handleNext = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      // Complete step 1
+      const stepData: Partial<OnboardingData> = {
+        age: age ? parseInt(age) : undefined,
+        gender: gender as any,
+        activityLevel: activityLevel as any,
+        healthGoals,
+      };
+      onNext(stepData);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+    } else {
+      onSkip();
+    }
+  };
+
   const toggleHealthGoal = (goal: string) => {
     setHealthGoals(prev =>
       prev.includes(goal)
@@ -67,17 +128,130 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
     );
   };
 
-  const handleContinue = () => {
-    const stepData: Partial<OnboardingData> = {
-      age: age ? parseInt(age) : undefined,
-      gender: gender as any,
-      activityLevel: activityLevel as any,
-      healthGoals,
-    };
-    onNext(stepData);
+  const renderAgeGenderQuestion = () => (
+    <View style={styles.questionContainer}>
+      <View style={styles.inputRow}>
+        <View style={styles.ageInput}>
+          <Text style={styles.label}>Age</Text>
+          <TextInput
+            style={styles.input}
+            value={age}
+            onChangeText={setAge}
+            placeholder="25"
+            placeholderTextColor={colors.text.tertiary}
+            keyboardType="numeric"
+            maxLength={3}
+          />
+        </View>
+        
+        <View style={styles.genderSelection}>
+          <Text style={styles.label}>Gender</Text>
+          <View style={styles.genderOptions}>
+            {['male', 'female', 'other'].map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={[
+                  styles.genderButton,
+                  gender === option && styles.selectedGender,
+                ]}
+                onPress={() => setGender(option)}>
+                <Text style={[
+                  styles.genderText,
+                  gender === option && styles.selectedGenderText,
+                ]}>
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+
+  const renderActivityQuestion = () => (
+    <View style={styles.questionContainer}>
+      <View style={styles.activityGrid}>
+        {activityLevels.map((level) => (
+          <TouchableOpacity
+            key={level.key}
+            style={[
+              styles.activityCard,
+              activityLevel === level.key && styles.selectedActivity,
+            ]}
+            onPress={() => setActivityLevel(level.key)}>
+            <Ionicons
+              name={level.icon as any}
+              size={32}
+              color={activityLevel === level.key ? colors.primary[400] : colors.text.tertiary}
+            />
+            <Text style={[
+              styles.activityLabel,
+              activityLevel === level.key && styles.selectedActivityLabel,
+            ]}>
+              {level.label}
+            </Text>
+            <Text style={styles.activityDescription}>
+              {level.description}
+            </Text>
+            {activityLevel === level.key && (
+              <View style={styles.checkmark}>
+                <Ionicons name="checkmark-circle" size={24} color={colors.primary[400]} />
+              </View>
+            )}
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
+  const renderGoalsQuestion = () => (
+    <View style={styles.questionContainer}>
+      <View style={styles.goalsGrid}>
+        {healthGoalOptions.map((goal) => (
+          <TouchableOpacity
+            key={goal.key}
+            style={[
+              styles.goalCard,
+              healthGoals.includes(goal.key) && styles.selectedGoal,
+            ]}
+            onPress={() => toggleHealthGoal(goal.key)}>
+            <Ionicons
+              name={goal.icon as any}
+              size={24}
+              color={healthGoals.includes(goal.key) ? colors.primary[400] : colors.text.tertiary}
+            />
+            <Text style={[
+              styles.goalLabel,
+              healthGoals.includes(goal.key) && styles.selectedGoalLabel,
+            ]}>
+              {goal.label}
+            </Text>
+            {healthGoals.includes(goal.key) && (
+              <View style={styles.checkIcon}>
+                <Ionicons name="checkmark-circle" size={20} color={colors.primary[400]} />
+              </View>
+            )}
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
+  const renderCurrentQuestion = () => {
+    switch (currentQ.type) {
+      case 'age_gender':
+        return renderAgeGenderQuestion();
+      case 'activity':
+        return renderActivityQuestion();
+      case 'goals':
+        return renderGoalsQuestion();
+      default:
+        return null;
+    }
   };
 
-  const isValid = age && gender && activityLevel && healthGoals.length > 0;
+  const isValid = canProceed();
 
   return (
     <ScrollView
