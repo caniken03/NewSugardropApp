@@ -611,4 +611,69 @@ const styles = StyleSheet.create({
   nextButton: {
     flex: 2,
   },
+
+  // Intro Screen Styles
+  guidanceCard: {
+    marginBottom: spacing.xl,
+    backgroundColor: colors.surface,
+  },
+
+  guidanceTitle: {
+    ...typography.headlineSmall,
+    color: colors.text.primary,
+    marginBottom: spacing.lg,
+    fontWeight: '600',
+  },
+
+  guidanceText: {
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
+    lineHeight: 22,
+    marginBottom: spacing.lg,
+  },
+
+  rememberSection: {
+    marginBottom: spacing.lg,
+  },
+
+  rememberTitle: {
+    ...typography.titleMedium,
+    color: colors.text.primary,
+    marginBottom: spacing.md,
+    fontWeight: '600',
+  },
+
+  bulletPoints: {
+    gap: spacing.sm,
+  },
+
+  bulletPoint: {
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
+    lineHeight: 20,
+  },
+
+  guidanceConclusion: {
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
+    lineHeight: 22,
+    marginBottom: spacing.lg,
+  },
+
+  instructions: {
+    ...typography.bodyMedium,
+    color: colors.text.primary,
+    fontWeight: '500',
+    fontStyle: 'italic',
+  },
+
+  introActions: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.xl,
+  },
+
+  startQuizButton: {
+    flex: 2,
+  },
 });
