@@ -101,6 +101,21 @@ class FoodEntryCreate(BaseModel):
     calories: Optional[float] = None  # Deprecated - will be removed
     meal_type: Optional[str] = "snack"
 
+class QuizResponse(BaseModel):
+    question_id: int
+    value: str  # A, B, or C
+
+class QuizSubmission(BaseModel):
+    responses: List[QuizResponse]
+
+class QuizResult(BaseModel):
+    body_type: str
+    sugarpoints_range: str
+    onboarding_path: str
+    health_risk: str
+    recommendations: List[str]
+    score_breakdown: dict
+
 class UserProfileUpdate(BaseModel):
     age: Optional[int] = None
     gender: Optional[str] = None
@@ -108,6 +123,10 @@ class UserProfileUpdate(BaseModel):
     health_goals: Optional[List[str]] = None
     daily_sugar_points_target: Optional[int] = None
     completed_onboarding: Optional[bool] = None
+    # Body type quiz results
+    body_type: Optional[str] = None
+    sugarpoints_range: Optional[str] = None
+    onboarding_path: Optional[str] = None
 
 class ChatMessage(BaseModel):
     message: str
