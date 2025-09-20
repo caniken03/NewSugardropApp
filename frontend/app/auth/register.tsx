@@ -224,99 +224,127 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background.primary,
-  },
   container: {
     flex: 1,
-    backgroundColor: colors.background.primary,
+    backgroundColor: colors.background,
   },
+
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   content: {
     flexGrow: 1,
-    padding: spacing.lg,
+    padding: layout.screenPadding,
+    justifyContent: 'center',
   },
+
+  // Header
   header: {
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.huge,
   },
+
   logoContainer: {
     width: 80,
     height: 80,
-    borderRadius: borderRadius.full,
+    borderRadius: 40,
+    backgroundColor: colors.primary[50],
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.lg,
-    backgroundColor: colors.background.secondary,
+    marginBottom: spacing.xl,
+    borderWidth: 2,
+    borderColor: colors.primary[100],
   },
+
   title: {
-    ...typography.heading.h1,
+    ...typography.displayMedium,
     color: colors.text.primary,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
+
   subtitle: {
-    ...typography.body.large,
+    ...typography.bodyLarge,
     color: colors.text.secondary,
     textAlign: 'center',
     lineHeight: 24,
   },
+
+  // Form
   form: {
-    gap: spacing.lg,
+    marginBottom: spacing.xxl,
   },
+
   inputContainer: {
-    gap: spacing.xs,
+    marginBottom: spacing.xl,
   },
+
   label: {
-    ...typography.body.medium,
-    fontWeight: '600',
+    ...typography.labelLarge,
     color: colors.text.primary,
+    marginBottom: spacing.sm,
   },
+
   input: {
-    height: touchTargets.medium,
+    height: touchTargets.comfortable,
     borderRadius: borderRadius.md,
     borderWidth: 1,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     fontSize: 16,
-    backgroundColor: colors.background.secondary,
-    borderColor: colors.border.primary,
+    backgroundColor: colors.surface,
+    borderColor: colors.border.light,
     color: colors.text.primary,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
+
   passwordContainer: {
     position: 'relative',
   },
+
   passwordInput: {
     paddingRight: 50,
   },
+
   eyeButton: {
     position: 'absolute',
-    right: spacing.md,
-    top: (touchTargets.medium - 28) / 2,
+    right: spacing.lg,
+    top: (touchTargets.comfortable - 28) / 2,
     padding: spacing.xs,
   },
+
   helperText: {
-    ...typography.body.small,
+    ...typography.bodySmall,
     color: colors.text.tertiary,
     marginTop: spacing.xs,
   },
+
   registerButton: {
-    marginTop: spacing.md,
+    marginBottom: spacing.xl,
   },
+
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: spacing.lg,
+    marginBottom: spacing.xl,
   },
+
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.border.primary,
+    backgroundColor: colors.border.light,
   },
+
   dividerText: {
-    ...typography.body.small,
+    ...typography.bodySmall,
     color: colors.text.tertiary,
-    marginHorizontal: spacing.md,
+    marginHorizontal: spacing.lg,
   },
 });
