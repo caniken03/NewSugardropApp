@@ -20,6 +20,12 @@ import ProgressCircle from '../../src/components/ProgressCircle';
 
 interface TodayData {
   entries: any[];
+  // SugarPoints system fields
+  total_sugar_points: number;
+  total_sugar_point_blocks: number;
+  sugar_points_text: string;
+  sugar_point_blocks_text: string;
+  // Legacy fields for backward compatibility
   total_sugar: number;
   daily_goal: number;
   percentage: number;
@@ -64,25 +70,34 @@ export default function HomeScreen() {
     return 'Good Evening';
   };
 
-  const getSugarStatus = () => {
+  const getSugarPointsStatus = () => {
     if (!todayData) return { text: 'No data', color: colors.textSecondary };
     
-    const percentage = todayData.percentage;
-    if (percentage <= 50) return { text: 'Great job! 🎉', color: colors.success };
-    if (percentage <= 80) return { text: 'Doing well 👍', color: colors.warning };
-    if (percentage <= 100) return { text: 'Getting close ⚠️', color: colors.warning };
-    return { text: 'Over limit 🚨', color: colors.error };
+    const sugarPoints = todayData.total_sugar_points || 0;
+    if (sugarPoints === 0) return { text: 'Perfect start! 🎉', color: '#10B981' };
+    if (sugarPoints <= 30) return { text: 'Great control! 🎯', color: '#10B981' };
+    if (sugarPoints <= 60) return { text: 'Doing well 👍', color: '#FDE68A' };
+    if (sugarPoints <= 100) return { text: 'Watch your intake ⚠️', color: '#FDE68A' };
+    return { text: 'High intake today 🚨', color: '#FCA5A5' };
+  };
+
+  const getSugarPointsCircleProgress = () => {
+    if (!todayData) return 0;
+    const sugarPoints = todayData.total_sugar_points || 0;
+    // Use 120 as a reasonable daily target for SugarPoints (equivalent to ~120g carbs)
+    const targetSugarPoints = 120;
+    return Math.min((sugarPoints / targetSugarPoints) * 100, 100);
   };
 
   if (loading) {
     return <LoadingSpinner />;
   }
 
-  const sugarStatus = getSugarStatus();
+  const sugarPointsStatus = getSugarPointsStatus();
 
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={[styles.container, { backgroundColor: '#0c0c0c' }]}
       contentContainerStyle={[styles.content, { paddingTop: insets.top }]}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -91,42 +106,45 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={[styles.greeting, { color: colors.textSecondary }]}>
+          <Text style={[styles.greeting, { color: '#9CA3AF' }]}>
             {getGreeting()}
           </Text>
-          <Text style={[styles.userName, { color: colors.text }]}>
+          <Text style={[styles.userName, { color: '#fff' }]}>
             {user?.name}
           </Text>
         </View>
         <TouchableOpacity
-          style={[styles.profileButton, { backgroundColor: colors.surface }]}
+          style={[styles.profileButton, { backgroundColor: '#111827' }]}
           onPress={() => router.push('/profile')}>
-          <Ionicons name="person" size={24} color={colors.primary} />
+          <Ionicons name="person" size={24} color="#2563EB" />
         </TouchableOpacity>
       </View>
 
       {/* Daily Progress Card */}
-      <View style={[styles.progressCard, { backgroundColor: colors.surface }]}>
-        <Text style={[styles.cardTitle, { color: colors.text }]}>
-          Today's Sugar Intake
+      <View style={[styles.progressCard, { backgroundColor: '#111827' }]}>
+        <Text style={[styles.cardTitle, { color: '#fff' }]}>
+          Today's SugarPoints Intake
         </Text>
         
         <View style={styles.progressContainer}>
           <ProgressCircle
-            percentage={todayData?.percentage || 0}
+            percentage={getSugarPointsCircleProgress()}
             size={120}
             strokeWidth={8}
-            color={colors.primary}
+            color="#2563EB"
           />
           <View style={styles.progressDetails}>
-            <Text style={[styles.sugarAmount, { color: colors.text }]}>
-              {todayData?.total_sugar.toFixed(1) || '0.0'}g
+            <Text style={[styles.sugarPointsAmount, { color: '#fff' }]}>
+              {todayData?.total_sugar_points || 0}
             </Text>
-            <Text style={[styles.sugarGoal, { color: colors.textSecondary }]}>
-              of {todayData?.daily_goal || 50}g daily goal
+            <Text style={[styles.sugarPointsLabel, { color: '#2563EB' }]}>
+              SugarPoints
             </Text>
-            <Text style={[styles.statusText, { color: sugarStatus.color }]}>
-              {sugarStatus.text}
+            <Text style={[styles.sugarPointsBlocks, { color: '#E5E7EB' }]}>
+              {todayData?.sugar_point_blocks_text || '0 Blocks'}
+            </Text>
+            <Text style={[styles.statusText, { color: sugarPointsStatus.color }]}>
+              {sugarPointsStatus.text}
             </Text>
           </View>
         </View>
@@ -134,43 +152,43 @@ export default function HomeScreen() {
 
       {/* Quick Actions */}
       <View style={styles.quickActions}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        <Text style={[styles.sectionTitle, { color: '#fff' }]}>
           Quick Actions
         </Text>
         
         <View style={styles.actionGrid}>
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.surface }]}
+            style={[styles.actionButton, { backgroundColor: '#111827', borderColor: '#374151', borderWidth: 1 }]}
             onPress={() => router.push('/(modals)/add-entry')}>
-            <Ionicons name="add-circle" size={32} color={colors.primary} />
-            <Text style={[styles.actionText, { color: colors.text }]}>
+            <Ionicons name="add-circle" size={32} color="#2563EB" />
+            <Text style={[styles.actionText, { color: '#fff' }]}>
               Log Food
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.surface }]}
+            style={[styles.actionButton, { backgroundColor: '#111827', borderColor: '#374151', borderWidth: 1 }]}
             onPress={() => router.push('/(tabs)/scanner')}>
-            <Ionicons name="camera" size={32} color={colors.primary} />
-            <Text style={[styles.actionText, { color: colors.text }]}>
+            <Ionicons name="camera" size={32} color="#2563EB" />
+            <Text style={[styles.actionText, { color: '#fff' }]}>
               Scan Food
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.surface }]}
-            onPress={() => router.push('/(tabs)/chat')}>
-            <Ionicons name="chatbubble-ellipses" size={32} color={colors.primary} />
-            <Text style={[styles.actionText, { color: colors.text }]}>
+            style={[styles.actionButton, { backgroundColor: '#111827', borderColor: '#374151', borderWidth: 1 }]}
+            onPress={() => router.push('/(tabs)/aichat')}>
+            <Ionicons name="chatbubble-ellipses" size={32} color="#2563EB" />
+            <Text style={[styles.actionText, { color: '#fff' }]}>
               Ask AI Coach
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.surface }]}
+            style={[styles.actionButton, { backgroundColor: '#111827', borderColor: '#374151', borderWidth: 1 }]}
             onPress={() => router.push('/(tabs)/progress')}>
-            <Ionicons name="analytics" size={32} color={colors.primary} />
-            <Text style={[styles.actionText, { color: colors.text }]}>
+            <Ionicons name="analytics" size={32} color="#2563EB" />
+            <Text style={[styles.actionText, { color: '#fff' }]}>
               View Progress
             </Text>
           </TouchableOpacity>
@@ -180,23 +198,25 @@ export default function HomeScreen() {
       {/* Recent Entries */}
       {todayData?.entries && todayData.entries.length > 0 && (
         <View style={styles.recentEntries}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          <Text style={[styles.sectionTitle, { color: '#fff' }]}>
             Today's Foods
           </Text>
           
           {todayData.entries.slice(0, 3).map((entry, index) => (
             <View
               key={entry.id}
-              style={[styles.entryItem, { backgroundColor: colors.surface }]}>
+              style={[styles.entryItem, { backgroundColor: '#1f2937', borderColor: '#374151', borderWidth: 1 }]}>
               <View style={styles.entryInfo}>
-                <Text style={[styles.entryName, { color: colors.text }]}>
+                <Text style={[styles.entryName, { color: '#fff' }]}>
                   {entry.name}
                 </Text>
-                <Text style={[styles.entryDetails, { color: colors.textSecondary }]}>
-                  {entry.portion_size}g • {(entry.sugar_content * entry.portion_size).toFixed(1)}g sugar
+                <Text style={[styles.entryDetails, { color: '#E5E7EB' }]}>
+                  {entry.portion_size}g • {entry.sugar_points || 0} SugarPoints
+                  {entry.fat_per_100g > 0 && ` • Fat: ${(entry.fat_per_100g * entry.portion_size / 100).toFixed(1)}g`}
+                  {entry.protein_per_100g > 0 && ` • Protein: ${(entry.protein_per_100g * entry.portion_size / 100).toFixed(1)}g`}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </View>
           ))}
           
@@ -204,7 +224,7 @@ export default function HomeScreen() {
             <TouchableOpacity
               style={styles.viewAllButton}
               onPress={() => router.push('/(tabs)/progress')}>
-              <Text style={[styles.viewAllText, { color: colors.primary }]}>
+              <Text style={[styles.viewAllText, { color: '#2563EB' }]}>
                 View all {todayData.entries.length} entries
               </Text>
             </TouchableOpacity>
@@ -220,7 +240,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 20,
+    padding: 16, // Following 8pt grid system
     paddingBottom: 100,
   },
   header: {
@@ -231,28 +251,32 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 16,
+    fontWeight: '400',
     marginBottom: 4,
   },
   userName: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   profileButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    borderColor: '#374151',
+    borderWidth: 1,
   },
   progressCard: {
-    borderRadius: 16,
+    borderRadius: 10,
     padding: 24,
     marginBottom: 24,
-    ...webSafeShadow.medium,
+    borderColor: '#374151',
+    borderWidth: 1,
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -264,43 +288,49 @@ const styles = StyleSheet.create({
   progressDetails: {
     alignItems: 'center',
   },
-  sugarAmount: {
+  sugarPointsAmount: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginBottom: 4,
   },
-  sugarGoal: {
+  sugarPointsLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  sugarPointsBlocks: {
     fontSize: 14,
+    fontWeight: '400',
     marginBottom: 8,
   },
   statusText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
   },
   quickActions: {
     marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: '700',
     marginBottom: 16,
   },
   actionGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: 8,
   },
   actionButton: {
     width: '48%',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 10,
+    padding: 16,
     alignItems: 'center',
-    marginBottom: 12,
-    ...webSafeShadow.small,
+    marginBottom: 8,
   },
   actionText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '400',
     marginTop: 8,
     textAlign: 'center',
   },
@@ -311,21 +341,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 10,
     marginBottom: 8,
-    ...webSafeShadow.small,
   },
   entryInfo: {
     flex: 1,
   },
   entryName: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '700',
     marginBottom: 4,
   },
   entryDetails: {
-    fontSize: 14,
+    fontSize: 12,
+    fontWeight: '400',
   },
   viewAllButton: {
     paddingVertical: 12,
@@ -333,6 +363,6 @@ const styles = StyleSheet.create({
   },
   viewAllText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '700',
   },
 });
