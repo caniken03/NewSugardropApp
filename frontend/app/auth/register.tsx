@@ -224,93 +224,99 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background.primary,
+  },
   container: {
     flex: 1,
+    backgroundColor: colors.background.primary,
   },
-  scrollContent: {
+  content: {
     flexGrow: 1,
-    padding: 24,
+    padding: spacing.lg,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: spacing.xl,
   },
   logoContainer: {
     width: 80,
     height: 80,
-    borderRadius: 40,
+    borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.lg,
+    backgroundColor: colors.background.secondary,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    ...typography.heading.h1,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
+    ...typography.body.large,
+    color: colors.text.secondary,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
   },
   form: {
-    marginBottom: 40,
+    gap: spacing.lg,
   },
   inputContainer: {
-    marginBottom: 24,
+    gap: spacing.xs,
   },
   label: {
+    ...typography.body.medium,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  input: {
+    height: touchTargets.medium,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
     fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 8,
+    backgroundColor: colors.background.secondary,
+    borderColor: colors.border.primary,
+    color: colors.text.primary,
   },
   passwordContainer: {
     position: 'relative',
   },
+  passwordInput: {
+    paddingRight: 50,
+  },
   eyeButton: {
     position: 'absolute',
-    right: 16,
-    top: 16,
-    padding: 4,
+    right: spacing.md,
+    top: (touchTargets.medium - 28) / 2,
+    padding: spacing.xs,
   },
   helperText: {
-    fontSize: 12,
-    marginTop: 4,
+    ...typography.body.small,
+    color: colors.text.tertiary,
+    marginTop: spacing.xs,
   },
   registerButton: {
-    height: 52,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  registerButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    marginTop: spacing.md,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginVertical: spacing.lg,
   },
   dividerLine: {
     flex: 1,
     height: 1,
+    backgroundColor: colors.border.primary,
   },
   dividerText: {
-    marginHorizontal: 16,
-    fontSize: 14,
-  },
-  loginButton: {
-    height: 52,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loginButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.body.small,
+    color: colors.text.tertiary,
+    marginHorizontal: spacing.md,
   },
 });
