@@ -3,85 +3,38 @@ import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-na
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, layout, touchTargets, borderRadius } from '@/design-system';
-import { Button, Card } from '@/design-system/components';
 
 export default function WelcomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Ionicons name="water" size={48} color={colors.primary[400]} />
-          </View>
+        {/* Main Content */}
+        <View style={styles.mainContent}>
           <Text style={styles.title}>SugarDrop</Text>
-          <Text style={styles.subtitle}>
-            AI-Powered Nutrition Tracking
+          <Text style={styles.tagline}>
+            Your journey to sweet freedom.
           </Text>
-        </View>
-
-        {/* Features */}
-        <View style={styles.features}>
-          <Card variant="outlined" style={styles.featureCard}>
-            <View style={styles.featureItem}>
-              <View style={styles.featureIcon}>
-                <Ionicons name="restaurant-outline" size={24} color={colors.primary[400]} />
-              </View>
-              <Text style={styles.featureText}>Track SugarPoints & nutrition</Text>
-            </View>
-          </Card>
-          
-          <Card variant="outlined" style={styles.featureCard}>
-            <View style={styles.featureItem}>
-              <View style={styles.featureIcon}>
-                <Ionicons name="camera-outline" size={24} color={colors.primary[400]} />
-              </View>
-              <Text style={styles.featureText}>AI-powered food recognition</Text>
-            </View>
-          </Card>
-          
-          <Card variant="outlined" style={styles.featureCard}>
-            <View style={styles.featureItem}>
-              <View style={styles.featureIcon}>
-                <Ionicons name="chatbubble-ellipses-outline" size={24} color={colors.primary[400]} />
-              </View>
-              <Text style={styles.featureText}>Personal nutrition coach</Text>
-            </View>
-          </Card>
-          
-          <Card variant="outlined" style={styles.featureCard}>
-            <View style={styles.featureItem}>
-              <View style={styles.featureIcon}>
-                <Ionicons name="analytics-outline" size={24} color={colors.primary[400]} />
-              </View>
-              <Text style={styles.featureText}>Progress analytics</Text>
-            </View>
-          </Card>
         </View>
 
         {/* Actions */}
         <View style={styles.actions}>
-          <Button
-            title="Create Account First"
-            onPress={() => router.push('/auth/register')}
-            size="large"
-            fullWidth
-          />
+          <TouchableOpacity
+            style={styles.getStartedButton}
+            onPress={() => router.push('/onboarding')}
+            accessibilityRole="button"
+            accessibilityLabel="Get started with SugarDrop">
+            <Text style={styles.getStartedText}>Get Started</Text>
+          </TouchableOpacity>
           
-          <Button
-            title="I Have an Account"
-            variant="outline"
+          <TouchableOpacity
+            style={styles.signInButton}
             onPress={() => router.push('/auth/login')}
-            size="large"
-            fullWidth
-          />
-        </View>
-
-        {/* Demo Info */}
-        <View style={styles.demoInfo}>
-          <Text style={styles.demoText}>
-            Demo: demo@sugardrop.com / demo123
-          </Text>
+            accessibilityRole="button"
+            accessibilityLabel="Sign in to existing account">
+            <Text style={styles.signInText}>
+              Already have an account? <Text style={styles.signInLink}>Sign In</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -97,88 +50,66 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: layout.screenPadding,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: spacing.huge,
   },
 
-  // Header
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.huge,
-  },
-
-  logoContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: colors.primary[50],
-    alignItems: 'center',
+  // Main Content
+  mainContent: {
+    flex: 1,
     justifyContent: 'center',
-    marginBottom: spacing.xl,
-    borderWidth: 2,
-    borderColor: colors.primary[100],
+    alignItems: 'center',
   },
 
   title: {
-    ...typography.displayLarge,
+    fontSize: 48,
+    fontWeight: '700',
     color: colors.text.primary,
-    marginBottom: spacing.sm,
     textAlign: 'center',
+    marginBottom: spacing.lg,
+    letterSpacing: -1,
   },
 
-  subtitle: {
-    ...typography.bodyLarge,
+  tagline: {
+    ...typography.headlineMedium,
     color: colors.text.secondary,
     textAlign: 'center',
-  },
-
-  // Features
-  features: {
-    marginBottom: spacing.huge,
-  },
-
-  featureCard: {
-    marginBottom: spacing.md,
-  },
-
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.lg,
-  },
-
-  featureIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.primary[50],
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.lg,
-  },
-
-  featureText: {
-    ...typography.bodyLarge,
-    color: colors.text.primary,
-    flex: 1,
+    fontWeight: '400',
   },
 
   // Actions
   actions: {
     gap: spacing.lg,
-    marginBottom: spacing.xl,
   },
 
-  // Demo Info
-  demoInfo: {
+  getStartedButton: {
+    backgroundColor: colors.text.primary, // Black button
+    borderRadius: borderRadius.pill,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xxl,
     alignItems: 'center',
-    paddingTop: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.light,
+    minHeight: touchTargets.large,
   },
 
-  demoText: {
-    ...typography.bodySmall,
-    color: colors.text.tertiary,
+  getStartedText: {
+    ...typography.buttonLarge,
+    color: colors.surface, // White text on black
+    fontWeight: '600',
+  },
+
+  signInButton: {
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
+  },
+
+  signInText: {
+    ...typography.bodyLarge,
+    color: colors.text.secondary,
     textAlign: 'center',
+  },
+
+  signInLink: {
+    color: colors.primary[400],
+    fontWeight: '600',
   },
 });
