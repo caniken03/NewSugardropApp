@@ -1,36 +1,64 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../src/contexts/ThemeContext';
+import { colors, spacing, touchTargets } from '../../src/design-system';
 
 export default function TabLayout() {
-  const { colors } = useTheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarActiveTintColor: colors.primary[400],
+        tabBarInactiveTintColor: colors.text.tertiary,
         tabBarStyle: {
           backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          height: 85,
-          paddingBottom: 25,
-          paddingTop: 10,
+          borderTopColor: colors.border.light,
+          borderTopWidth: 1,
+          height: touchTargets.large + spacing.xl + spacing.sm, // 56 + 24 + 8 = 88px
+          paddingBottom: spacing.xl, // 24px
+          paddingTop: spacing.sm,    // 8px
+          paddingHorizontal: spacing.sm, // 8px
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          elevation: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '500',
+          marginTop: 2,
+        },
+        tabBarIconStyle: {
+          marginTop: 4,
         },
         headerStyle: {
-          backgroundColor: colors.background,
+          backgroundColor: colors.surface,
+          borderBottomColor: colors.border.light,
+          borderBottomWidth: 1,
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 4,
+          elevation: 2,
         },
-        headerTintColor: colors.text,
+        headerTintColor: colors.text.primary,
         headerTitleStyle: {
+          fontSize: 18,
           fontWeight: '600',
+          color: colors.text.primary,
         },
+        headerTitleAlign: 'center',
       }}>
       <Tabs.Screen
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+          headerTitle: 'SugarDrop',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons 
+              name={focused ? "home" : "home-outline"} 
+              size={size} 
+              color={color} 
+            />
           ),
         }}
       />
@@ -38,8 +66,13 @@ export default function TabLayout() {
         name="search"
         options={{
           title: 'Search',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" size={size} color={color} />
+          headerTitle: 'Food Search',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons 
+              name={focused ? "search" : "search-outline"} 
+              size={size} 
+              color={color} 
+            />
           ),
         }}
       />
@@ -47,17 +80,27 @@ export default function TabLayout() {
         name="scanner"
         options={{
           title: 'Scanner',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="camera" size={size} color={color} />
+          headerTitle: 'Food Scanner',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons 
+              name={focused ? "camera" : "camera-outline"} 
+              size={size} 
+              color={color} 
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="chat"
+        name="aichat"
         options={{
           title: 'AI Coach',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-ellipses" size={size} color={color} />
+          headerTitle: 'Nutrition Coach',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons 
+              name={focused ? "chatbubble-ellipses" : "chatbubble-ellipses-outline"} 
+              size={size} 
+              color={color} 
+            />
           ),
         }}
       />
@@ -65,8 +108,13 @@ export default function TabLayout() {
         name="progress"
         options={{
           title: 'Progress',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="analytics" size={size} color={color} />
+          headerTitle: 'Your Progress',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons 
+              name={focused ? "analytics" : "analytics-outline"} 
+              size={size} 
+              color={color} 
+            />
           ),
         }}
       />
