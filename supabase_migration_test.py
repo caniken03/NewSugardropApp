@@ -16,7 +16,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BACKEND_URL = "https://sugar-tracker-app-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://nutriai-14.preview.emergentagent.com/api"
 
 class SupabaseMigrationTester:
     def __init__(self):

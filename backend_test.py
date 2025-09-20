@@ -11,7 +11,7 @@ from datetime import datetime
 import uuid
 
 # Configuration
-BACKEND_URL = "https://sugar-tracker-app-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://nutriai-14.preview.emergentagent.com/api"
 TEST_USER_EMAIL = "demo@sugardrop.com"
 TEST_USER_PASSWORD = "demo123"
 TEST_USER_NAME = "Demo User"
