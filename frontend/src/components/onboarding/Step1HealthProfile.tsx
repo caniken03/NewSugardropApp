@@ -267,134 +267,42 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
         </Text>
       </View>
 
-      {/* Age & Gender */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Basic Information</Text>
-        
-        <View style={styles.inputRow}>
-          <View style={styles.ageInput}>
-            <Text style={styles.label}>Age</Text>
-            <TextInput
-              style={styles.input}
-              value={age}
-              onChangeText={setAge}
-              placeholder="25"
-              placeholderTextColor={colors.text.tertiary}
-              keyboardType="numeric"
-              maxLength={3}
-            />
-          </View>
-          
-          <View style={styles.genderSelection}>
-            <Text style={styles.label}>Gender</Text>
-            <View style={styles.genderOptions}>
-              {['male', 'female', 'other'].map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    styles.genderButton,
-                    gender === option && styles.selectedGender,
-                  ]}
-                  onPress={() => setGender(option)}>
-                  <Text style={[
-                    styles.genderText,
-                    gender === option && styles.selectedGenderText,
-                  ]}>
-                    {option.charAt(0).toUpperCase() + option.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+      {/* Progress */}
+      <View style={styles.progressContainer}>
+        <Text style={styles.progressText}>
+          Question {currentQuestion + 1} of {questions.length}
+        </Text>
+        <View style={styles.progressBar}>
+          <View style={[styles.progressFill, { width: `${((currentQuestion + 1) / questions.length) * 100}%` }]} />
         </View>
       </View>
 
-      {/* Activity Level */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Activity Level</Text>
-        <Text style={styles.sectionSubtitle}>
-          This helps us recommend your daily SugarPoints target
-        </Text>
+      {/* Current Question */}
+      <View style={styles.questionSection}>
+        <Text style={styles.questionTitle}>{currentQ.title}</Text>
+        {currentQ.subtitle && (
+          <Text style={styles.questionSubtitle}>{currentQ.subtitle}</Text>
+        )}
         
-        <View style={styles.activityGrid}>
-          {activityLevels.map((level) => (
-            <TouchableOpacity
-              key={level.key}
-              style={[
-                styles.activityCard,
-                activityLevel === level.key && styles.selectedActivity,
-              ]}
-              onPress={() => setActivityLevel(level.key)}>
-              <Ionicons
-                name={level.icon as any}
-                size={32}
-                color={activityLevel === level.key ? colors.primary[400] : colors.text.tertiary}
-              />
-              <Text style={[
-                styles.activityLabel,
-                activityLevel === level.key && styles.selectedActivityLabel,
-              ]}>
-                {level.label}
-              </Text>
-              <Text style={styles.activityDescription}>
-                {level.description}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Health Goals */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Health Goals</Text>
-        <Text style={styles.sectionSubtitle}>
-          Select all that apply (you can change these later)
-        </Text>
-        
-        <View style={styles.goalsGrid}>
-          {healthGoalOptions.map((goal) => (
-            <TouchableOpacity
-              key={goal.key}
-              style={[
-                styles.goalCard,
-                healthGoals.includes(goal.key) && styles.selectedGoal,
-              ]}
-              onPress={() => toggleHealthGoal(goal.key)}>
-              <Ionicons
-                name={goal.icon as any}
-                size={24}
-                color={healthGoals.includes(goal.key) ? colors.primary[400] : colors.text.tertiary}
-              />
-              <Text style={[
-                styles.goalLabel,
-                healthGoals.includes(goal.key) && styles.selectedGoalLabel,
-              ]}>
-                {goal.label}
-              </Text>
-              {healthGoals.includes(goal.key) && (
-                <View style={styles.checkIcon}>
-                  <Ionicons name="checkmark-circle" size={16} color={colors.primary[400]} />
-                </View>
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
+        {renderCurrentQuestion()}
       </View>
 
       {/* Actions */}
       <View style={styles.actions}>
         <Button
-          title="Skip for now"
-          variant="ghost"
-          onPress={onSkip}
-          style={styles.skipButton}
+          title={currentQuestion === 0 ? "Skip for now" : "Back"}
+          variant="outline"
+          onPress={handleBack}
+          style={styles.backButton}
         />
         
         <Button
-          title="Continue"
-          onPress={handleContinue}
+          title={currentQuestion === questions.length - 1 ? "Continue" : "Next"}
+          onPress={handleNext}
           disabled={!isValid}
-          style={styles.continueButton}
+          style={styles.nextButton}
+          icon={currentQuestion === questions.length - 1 ? undefined : "arrow-forward"}
+          iconPosition="right"
         />
       </View>
     </ScrollView>
