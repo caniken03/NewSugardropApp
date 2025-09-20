@@ -151,7 +151,7 @@ class PassioService:
     
     def _normalize_search_results(self, data: Any) -> List[Dict[str, Any]]:
         """
-        Normalize Passio search results to SugarDrop format
+        Normalize Passio search results to SugarDrop SugarPoints format
         """
         normalized = []
         
@@ -160,12 +160,21 @@ class PassioService:
         
         for item in items[:20]:  # Limit to 20 results
             try:
+                # Extract nutrition values for SugarPoints system
+                carbs_per_100g = self._extract_carbs_content(item)
+                fat_per_100g = self._extract_fat_content(item)
+                protein_per_100g = self._extract_protein_content(item)
+                
                 normalized_item = {
                     "id": item.get("passio_id", str(hash(item.get("name", "")))),
                     "name": item.get("name", "Unknown Food"),
                     "brand": item.get("brand_name"),
+                    # New SugarPoints system fields
+                    "carbs_per_100g": carbs_per_100g,
+                    "fat_per_100g": fat_per_100g,
+                    "protein_per_100g": protein_per_100g,
+                    # Legacy field for backward compatibility
                     "sugar_per_100g": self._extract_sugar_content(item),
-                    "calories_per_100g": self._extract_calories(item),
                     "category": item.get("food_type", "General"),
                     "serving_sizes": self._extract_serving_sizes(item),
                     "confidence": item.get("confidence", 1.0)
