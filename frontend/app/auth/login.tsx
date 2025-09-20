@@ -107,7 +107,7 @@ export default function LoginScreen() {
         {/* Form */}
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Email</Text>
+            <Text style={toStyle([styles.label, { color: colors.text }])}>Email</Text>
             <TextInput
               style={inputStyle}
               value={email}
@@ -121,10 +121,10 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Password</Text>
+            <Text style={toStyle([styles.label, { color: colors.text }])}>Password</Text>
             <View style={styles.passwordContainer}>
               <TextInput
-                style={[inputStyle, { paddingRight: 50 }]}
+                style={toStyle([inputStyle, { paddingRight: 50 }])}
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Enter your password"
