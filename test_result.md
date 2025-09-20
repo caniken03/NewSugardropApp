@@ -108,39 +108,48 @@ backend:
   # Body Type Quiz Implementation - Phase A
   - task: "Body Type Quiz Engine Implementation"
     implemented: true
-    working: false
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "unknown"
         agent: "main"
         comment: "Implemented calculate_body_type_from_quiz() function with scoring logic. Handles all evaluation test cases: All A→Ectomorph, All B→Mesomorph, All C→Endomorph, Ties→Hybrid. Added proper error handling for invalid responses and incomplete submissions."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: All 10 evaluation cases pass perfectly! Quiz engine correctly calculates: Ectomorph (100–125), Mesomorph (75–100), Endomorph (50–75), Hybrid (75–125). Proper validation for incomplete submissions (400 error) and invalid values (400 error). Telemetry logging working correctly."
       
   - task: "Quiz API Endpoints"
     implemented: true
-    working: false
+    working: true
     file: "server.py" 
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "unknown"
         agent: "main"
         comment: "Added POST /quiz/submit endpoint with QuizSubmission and QuizResult models. Validates 15 questions, question IDs 1-15, response values A/B/C. Returns body_type, sugarpoints_range, onboarding_path, health_risk, and recommendations. Includes telemetry logging."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: POST /api/quiz/submit endpoint working perfectly. All required fields returned: body_type, sugarpoints_range, onboarding_path, health_risk, recommendations, score_breakdown. Proper error handling for validation failures. Authentication working correctly."
 
   - task: "User Profile Integration for Quiz Results"
     implemented: true
     working: false
     file: "server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high" 
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "unknown"
         agent: "main"
         comment: "Updated UserProfileUpdate model to include body_type, sugarpoints_range, onboarding_path fields. Enhanced PUT /user/profile and GET /user/profile endpoints to handle quiz results storage and retrieval."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL: Database schema missing required columns. GET /user/profile works but PUT /user/profile fails with 'Could not find body_type column'. Need to run SQL migration: ALTER TABLE users ADD COLUMN body_type VARCHAR(20), sugarpoints_range VARCHAR(20), onboarding_path VARCHAR(20), age INTEGER, gender VARCHAR(20), activity_level VARCHAR(20), health_goals JSONB DEFAULT '[]'::jsonb, daily_sugar_points_target INTEGER DEFAULT 100, completed_onboarding BOOLEAN DEFAULT FALSE, quiz_completed_at TIMESTAMP WITH TIME ZONE;"
 
 frontend:
   # Body Type Quiz Implementation - Phase A & B
