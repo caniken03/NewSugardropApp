@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { apiClient } from '../../src/services/api';
+import { webSafeShadow } from '../../src/utils/styles';
 import AuthGuard from '../../src/components/AuthGuard';
 import LoadingSpinner from '../../src/components/LoadingSpinner';
 import ProgressCircle from '../../src/components/ProgressCircle';
