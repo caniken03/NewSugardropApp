@@ -62,16 +62,16 @@ export default function WelcomeScreen() {
         {/* Actions */}
         <View style={styles.actions}>
           <Button
-            title="Sign In"
-            onPress={() => router.push('/auth/login')}
+            title="Get Started"
+            onPress={() => router.push('/onboarding')}
             size="large"
             fullWidth
           />
           
           <Button
-            title="Create Account"
+            title="I Have an Account"
             variant="outline"
-            onPress={() => router.push('/auth/register')}
+            onPress={() => router.push('/auth/login')}
             size="large"
             fullWidth
           />
