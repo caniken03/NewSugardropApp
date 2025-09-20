@@ -383,6 +383,13 @@ async def submit_body_type_quiz(quiz_data: QuizSubmission, current_user: User = 
         
     except HTTPException:
         raise
+    except ValueError as e:
+        # Handle validation errors from quiz engine
+        logger.error(f"Quiz validation error: {str(e)}")
+        raise HTTPException(
+            status_code=400, 
+            detail=str(e)
+        )
     except Exception as e:
         logger.error(f"Quiz submission error: {str(e)}")
         raise HTTPException(
