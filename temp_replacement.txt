@@ -1,0 +1,41 @@
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: colors.text }]}>
+              Meal Type
+            </Text>
+            <View style={styles.mealTypeContainer}>
+              {[
+                { key: 'breakfast', label: 'Breakfast', icon: 'sunny' },
+                { key: 'lunch', label: 'Lunch', icon: 'restaurant' },
+                { key: 'dinner', label: 'moon', icon: 'moon' },
+                { key: 'snack', label: 'Snack', icon: 'fast-food' },
+              ].map((meal) => (
+                <TouchableOpacity
+                  key={meal.key}
+                  style={[
+                    styles.mealTypeButton,
+                    {
+                      backgroundColor: formData.mealType === meal.key ? colors.primary : colors.surface,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                  onPress={() => updateFormData('mealType', meal.key)}>
+                  <Ionicons
+                    name={meal.icon as any}
+                    size={20}
+                    color={formData.mealType === meal.key ? '#ffffff' : colors.text}
+                  />
+                  <Text
+                    style={[
+                      styles.mealTypeText,
+                      {
+                        color: formData.mealType === meal.key ? '#ffffff' : colors.text,
+                      },
+                    ]}>
+                    {meal.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.inputContainer}>
