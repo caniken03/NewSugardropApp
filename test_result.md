@@ -122,15 +122,18 @@ backend:
       
   - task: "Backend Models Update for SugarPoints"
     implemented: true
-    working: false
+    working: true
     file: "server.py" 
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "unknown"
         agent: "main"
         comment: "Updated FoodEntry and FoodEntryCreate models to support new SugarPoints system fields: carbs_per_100g, fat_per_100g, protein_per_100g, sugar_points, sugar_point_blocks. Maintained backward compatibility with legacy sugar_content field."
+      - working: true
+        agent: "testing"
+        comment: "PASSED: Models correctly handle new SugarPoints fields. Fat and protein values preserved accurately (35g protein, 4.2g fat tested). Database schema fallback works when new columns don't exist - gracefully falls back to basic legacy fields."
 
   - task: "Food Entry Creation API Update"
     implemented: true
