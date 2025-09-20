@@ -283,7 +283,7 @@ def calculate_body_type_from_quiz(responses: List[QuizResponse]) -> QuizResult:
         body_type = "Hybrid"
         sugarpoints_range = "75–125"
         onboarding_path = "Balanced"
-        health_risk = "Varied metabolism - monitor patterns closely"
+        description = "If your points are evenly split, you might have a hybrid body type. Nevertheless, identify your dominant body type with the highest score."
         recommendations = [
             "Try different SugarPoints targets to find your sweet spot",
             "Track how different foods affect your energy levels"
@@ -292,31 +292,31 @@ def calculate_body_type_from_quiz(responses: List[QuizResponse]) -> QuizResult:
         # Single winner - determine body type
         winner = winners[0]
         if winner == "A":
-            # Ectomorph - Fast metabolism
+            # Ectomorph
             body_type = "Ectomorph"
             sugarpoints_range = "100–125"
             onboarding_path = "High Energy"
-            health_risk = "Low risk but potential for 'skinny fat' without proper nutrition"
+            description = "Your quiz results indicate that you possess an Ectomorph body type, characterised by a fast metabolism and a tendency to find it challenging to gain weight. While you generally handle excess sugar or carbohydrate intake well, remaining mindful of overall health is crucial. Despite not facing weight-related issues, it's essential to avoid excessive sugar consumption to prevent the development of a condition known as \"skinny fat.\" In this situation, the body may accumulate excess body fat beneath the skin, potentially leading to health concerns such as diabetes, stroke, and other illnesses."
             recommendations = [
                 "Focus on nutrient-dense carbohydrates for sustained energy",
                 "Don't skip meals - maintain consistent SugarPoints intake"
             ]
         elif winner == "B":
-            # Mesomorph - Balanced metabolism
+            # Mesomorph
             body_type = "Mesomorph"
             sugarpoints_range = "75–100"
             onboarding_path = "Standard"
-            health_risk = "Moderate risk - generally responsive to lifestyle changes"
+            description = "Your quiz outcomes reveal that you fall into the Mesomorph body type category. With a more muscular build and a potentially moderate metabolism, your body can generally handle moderate sugar and carbohydrate intake levels without notable issues. However, it's essential to exercise caution with excessive consumption, particularly when it comes to refined sugars, as this could potentially result in undesired weight gain and affect your muscle definition. If your family has any history of Diabetes, you still need to be very mindful of your sugar intake levels."
             recommendations = [
                 "Maintain balanced nutrition with moderate SugarPoints",
                 "Regular exercise enhances your natural metabolic advantages"
             ]
         else:  # winner == "C"
-            # Endomorph - Slower metabolism
+            # Endomorph
             body_type = "Endomorph"
             sugarpoints_range = "50–75"
             onboarding_path = "Conservative"
-            health_risk = "Higher risk for metabolic issues - benefit from lower carb approach"
+            description = "Your results indicate an Endomorph body type associated with a tendency to store body fat and heightened sensitivity to excess sugar and carbohydrates. This type may be prone to midsection weight gain. To manage this, prioritise whole foods and opt for low-sugar choices, considering the potential for a sweet tooth. Extra vigilance in food choices is crucial. Given the Endomorph profile, there's an increased risk of Type 2 diabetes, emphasising the importance of adopting a health-conscious diet and lifestyle."
             recommendations = [
                 "Lower SugarPoints targets may help with weight management",
                 "Focus on protein and healthy fats to feel satisfied"
@@ -330,7 +330,7 @@ def calculate_body_type_from_quiz(responses: List[QuizResponse]) -> QuizResult:
         body_type=body_type,
         sugarpoints_range=sugarpoints_range,
         onboarding_path=onboarding_path,
-        health_risk=health_risk,
+        health_risk=description,  # Using description field for your exact text
         recommendations=recommendations,
         score_breakdown=counts
     )
