@@ -87,7 +87,7 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
       
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Let's personalize your experience</Text>
+        <Text style={styles.title}>Let's personalize your SugarDrop journey</Text>
         <Text style={styles.subtitle}>
           Help us calculate your ideal SugarPoints target
         </Text>
