@@ -115,7 +115,7 @@ export default function AddEntryModal() {
               {[
                 { key: 'breakfast', label: 'Breakfast', icon: 'sunny' },
                 { key: 'lunch', label: 'Lunch', icon: 'restaurant' },
-                { key: 'dinner', label: 'moon', icon: 'moon' },
+                { key: 'dinner', label: 'Dinner', icon: 'moon' },
                 { key: 'snack', label: 'Snack', icon: 'fast-food' },
               ].map((meal) => (
                 <TouchableOpacity
