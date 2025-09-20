@@ -95,25 +95,58 @@ class KBQuery(BaseModel):
 async def setup_database():
     """Create database tables if they don't exist"""
     try:
-        # Create users table
-        supabase.table('users').select('id').limit(1).execute()
-    except Exception:
-        # Table doesn't exist, create it via SQL
-        supabase.rpc('create_users_table').execute()
-    
-    try:
+        # Create users table directly using SQL
+        supabase.rpc('sql', {
+            'query': """
+            CREATE TABLE IF NOT EXISTS users (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                email VARCHAR UNIQUE NOT NULL,
+                name VARCHAR NOT NULL,
+                password VARCHAR NOT NULL,
+                daily_sugar_goal REAL DEFAULT 50.0,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+            """
+        }).execute()
+        
         # Create food_entries table
-        supabase.table('food_entries').select('id').limit(1).execute()
-    except Exception:
-        # Table doesn't exist, create it via SQL
-        supabase.rpc('create_food_entries_table').execute()
-    
-    try:
+        supabase.rpc('sql', {
+            'query': """
+            CREATE TABLE IF NOT EXISTS food_entries (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                name VARCHAR NOT NULL,
+                sugar_content REAL NOT NULL,
+                portion_size REAL NOT NULL,
+                calories REAL,
+                timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+            """
+        }).execute()
+        
         # Create chat_history table
-        supabase.table('chat_history').select('id').limit(1).execute()
-    except Exception:
-        # Table doesn't exist, create it via SQL
-        supabase.rpc('create_chat_history_table').execute()
+        supabase.rpc('sql', {
+            'query': """
+            CREATE TABLE IF NOT EXISTS chat_history (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                message TEXT NOT NULL,
+                response TEXT NOT NULL,
+                timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+            """
+        }).execute()
+        
+        logger.info("Database tables created successfully")
+    except Exception as e:
+        # Tables likely already exist or we don't have RPC access
+        # Try to test with a simple select instead
+        try:
+            supabase.table('users').select('id').limit(1).execute()
+            logger.info("Database tables already exist")
+        except Exception as setup_error:
+            logger.warning(f"Database setup warning: {setup_error}")
+            logger.info("Continuing without database setup - tables may need to be created manually")
 
 # Utility functions
 def hash_password(password: str) -> str:
