@@ -228,8 +228,6 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
     switch (currentQ.type) {
       case 'age_gender':
         return renderAgeGenderQuestion();
-      case 'activity':
-        return renderActivityQuestion();
       case 'goals':
         return renderGoalsQuestion();
       default:
