@@ -86,129 +86,103 @@ export default function LoginScreen() {
     backgroundColor: colors.primary,
   };
 
-  const containerStyle = {
-    flex: 1,
-    backgroundColor: colors.background,
-  };
-
-  const scrollContentStyle = {
-    flexGrow: 1,
-    padding: 24,
-    paddingTop: insets.top + 40,
-  };
-
-  const inputStyle = {
-    height: 52,
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    color: colors.text,
-  };
-
-  const buttonStyle = {
-    height: 52,
-    borderRadius: 12,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    marginBottom: 24,
-    backgroundColor: colors.primary,
-  };
-
   return (
     <KeyboardAvoidingView
-      style={containerStyle}
+      style={[styles.container, { paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
-        contentContainerStyle={scrollContentStyle}
-        showsVerticalScrollIndicator={false}>
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled">
         
         {/* Header */}
         <View style={styles.header}>
-          <View style={toStyle([styles.logoContainer, { backgroundColor: colors.primary }])}>
-            <Ionicons name="water" size={32} color="#ffffff" />
+          <View style={styles.logoContainer}>
+            <Ionicons name="water" size={40} color={colors.primary[400]} />
           </View>
-          <Text style={toStyle([styles.title, { color: colors.text }])}>
-            Welcome Back
-          </Text>
-          <Text style={toStyle([styles.subtitle, { color: colors.textSecondary }])}>
-            Sign in to continue tracking your sugar intake
+          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.subtitle}>
+            Sign in to continue tracking your SugarPoints
           </Text>
         </View>
 
         {/* Form */}
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={toStyle([styles.label, { color: colors.text }])}>Email</Text>
+            <Text style={styles.label}>Email</Text>
             <TextInput
-              style={inputStyle}
+              style={styles.input}
               value={email}
               onChangeText={setEmail}
               placeholder="Enter your email"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={colors.text.tertiary}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              accessibilityLabel="Email input"
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={toStyle([styles.label, { color: colors.text }])}>Password</Text>
+            <Text style={styles.label}>Password</Text>
             <View style={styles.passwordContainer}>
               <TextInput
-                style={toStyle([inputStyle, { paddingRight: 50 }])}
+                style={[styles.input, styles.passwordInput]}
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Enter your password"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.text.tertiary}
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
                 autoCorrect={false}
+                accessibilityLabel="Password input"
               />
               <TouchableOpacity
                 style={styles.eyeButton}
-                onPress={() => setShowPassword(!showPassword)}>
+                onPress={() => setShowPassword(!showPassword)}
+                accessibilityLabel={showPassword ? "Hide password" : "Show password"}>
                 <Ionicons
-                  name={showPassword ? 'eye-off' : 'eye'}
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color={colors.textSecondary}
+                  color={colors.text.tertiary}
                 />
               </TouchableOpacity>
             </View>
           </View>
 
-          <TouchableOpacity
-            style={buttonStyle}
+          <Button
+            title="Sign In"
             onPress={handleLogin}
-            disabled={loading}>
-            <Text style={styles.loginButtonText}>Sign In</Text>
-          </TouchableOpacity>
+            disabled={loading}
+            loading={loading}
+            size="large"
+            fullWidth
+            style={styles.loginButton}
+          />
 
           <View style={styles.divider}>
-            <View style={toStyle([styles.dividerLine, { backgroundColor: colors.border }])} />
-            <Text style={toStyle([styles.dividerText, { color: colors.textSecondary }])}>or</Text>
-            <View style={toStyle([styles.dividerLine, { backgroundColor: colors.border }])} />
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
           </View>
 
-          <Link href="/auth/register" asChild>
-            <TouchableOpacity style={toStyle([styles.registerButton, { borderColor: colors.border }])}>
-              <Text style={toStyle([styles.registerButtonText, { color: colors.text }])}>
-                Create New Account
-              </Text>
-            </TouchableOpacity>
-          </Link>
+          <Button
+            title="Create New Account"
+            variant="outline"
+            onPress={() => router.push('/auth/register')}
+            size="large"
+            fullWidth
+          />
         </View>
 
         {/* Demo Credentials */}
-        <View style={toStyle([styles.demoContainer, { backgroundColor: colors.surface }])}>
-          <Text style={toStyle([styles.demoTitle, { color: colors.text }])}>Demo Account</Text>
-          <Text style={toStyle([styles.demoText, { color: colors.textSecondary }])}>
+        <Card variant="outlined" style={styles.demoCard}>
+          <Text style={styles.demoTitle}>Demo Account</Text>
+          <Text style={styles.demoText}>
             Email: demo@sugardrop.com{'\n'}
             Password: demo123
           </Text>
-        </View>
+        </Card>
       </ScrollView>
     </KeyboardAvoidingView>
   );
