@@ -68,7 +68,7 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
     },
     {
       id: 'activity',
-      title: 'What's your activity level?',
+      title: "What's your activity level?",
       subtitle: 'This helps us recommend your daily SugarPoints target',
       type: 'activity' as const,
     },
