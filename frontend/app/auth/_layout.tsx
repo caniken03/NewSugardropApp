@@ -1,20 +1,25 @@
 import { Stack } from 'expo-router';
-import { useTheme } from '../../src/contexts/ThemeContext';
+import { colors } from '../../src/design-system';
 
 export default function AuthLayout() {
-  const { colors } = useTheme();
-
   return (
     <Stack
       screenOptions={{
+        animation: 'slide_from_right',
         headerStyle: {
-          backgroundColor: colors.background,
+          backgroundColor: colors.surface,
+          borderBottomColor: colors.border.light,
+          borderBottomWidth: 1,
         },
-        headerTintColor: colors.text,
+        headerTintColor: colors.text.primary,
         headerTitleStyle: {
           fontWeight: '600',
+          color: colors.text.primary,
         },
         headerShadowVisible: false,
+        contentStyle: {
+          backgroundColor: colors.background,
+        },
       }}>
       <Stack.Screen
         name="login"
