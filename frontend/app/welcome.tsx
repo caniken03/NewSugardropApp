@@ -20,9 +20,9 @@ export default function WelcomeScreen() {
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.getStartedButton}
-            onPress={() => router.push('/onboarding')}
+            onPress={() => router.push('/auth/register')}
             accessibilityRole="button"
-            accessibilityLabel="Get started with SugarDrop">
+            accessibilityLabel="Create account to get started">
             <Text style={styles.getStartedText}>Get Started</Text>
           </TouchableOpacity>
           
