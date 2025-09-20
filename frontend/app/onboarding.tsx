@@ -148,7 +148,7 @@ export default function OnboardingScreen() {
       <View style={styles.header}>
         {renderStepIndicator()}
         <Text style={styles.stepText}>
-          Step {currentStep} of 3
+          Step {currentStep} of 4
         </Text>
       </View>
 
