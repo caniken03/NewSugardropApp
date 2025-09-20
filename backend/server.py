@@ -395,7 +395,7 @@ async def health_check():
 # Startup event
 @app.on_event("startup")
 async def startup_event():
-    await setup_database()
+    # Skip automatic database setup - tables should be created manually in Supabase
     logger.info("SugarDrop API with Supabase started successfully")
 
 # Include router
