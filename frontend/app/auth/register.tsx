@@ -32,10 +32,10 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleRegister = async () => {
-    const { name, email, password, confirmPassword, dailyGoal } = formData;
+    const { name, email, password, confirmPassword } = formData;
 
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please fill in all required fields');
+    if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
@@ -49,15 +49,9 @@ export default function RegisterScreen() {
       return;
     }
 
-    const goal = parseFloat(dailyGoal) || 50;
-    if (goal <= 0 || goal > 200) {
-      Alert.alert('Error', 'Daily sugar goal must be between 1-200 grams');
-      return;
-    }
-
     setLoading(true);
     try {
-      await register(email.trim(), password, name.trim(), goal);
+      await register(email.trim(), password, name.trim(), 100); // Default SugarPoints goal
       // Redirect to onboarding for new users
       router.replace('/onboarding');
     } catch (error: any) {
