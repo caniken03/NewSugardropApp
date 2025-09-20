@@ -1,0 +1,403 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, typography, spacing, layout, borderRadius } from '@/design-system';
+import { Button, Card, ProgressRing } from '@/design-system/components';
+import { OnboardingData } from '../../app/onboarding';
+
+interface Step3Props {
+  data: OnboardingData;
+  onNext: (data: Partial<OnboardingData>) => void;
+  onBack: () => void;
+}
+
+const bodyTypeInfo = {
+  Ectomorph: {
+    icon: 'flash-outline',
+    color: colors.success[400],
+    title: 'Fast Metabolism',
+    description: 'You have a naturally fast metabolism and can handle higher carbohydrate intake.',
+    characteristics: [
+      'Burns calories quickly',
+      'Struggles to gain weight',
+      'High energy, sometimes restless',
+      'Can tolerate more SugarPoints'
+    ]
+  },
+  Mesomorph: {
+    icon: 'fitness-outline',
+    color: colors.primary[400],
+    title: 'Balanced Metabolism',
+    description: 'You have a naturally balanced metabolism that responds well to lifestyle changes.',
+    characteristics: [
+      'Builds muscle easily',
+      'Moderate weight management',
+      'Good energy levels',
+      'Balanced SugarPoints needs'
+    ]
+  },
+  Endomorph: {
+    icon: 'leaf-outline',
+    color: colors.warning[400],
+    title: 'Efficient Metabolism',
+    description: 'You have an efficient metabolism that benefits from a more conservative carbohydrate approach.',
+    characteristics: [
+      'Stores energy efficiently',
+      'Gains weight easily',
+      'Benefits from lower carbs',
+      'Lower SugarPoints target'
+    ]
+  },
+  Hybrid: {
+    icon: 'options-outline',
+    color: colors.neutral[500],
+    title: 'Mixed Metabolism',
+    description: 'You show characteristics of multiple body types, giving you flexibility in approach.',
+    characteristics: [
+      'Varied metabolic responses',
+      'Benefits from experimentation',
+      'Adaptable to different approaches',
+      'Flexible SugarPoints range'
+    ]
+  }
+};
+
+export default function Step3QuizResults({ data, onNext, onBack }: Step3Props) {
+  const bodyType = data.bodyType || 'Hybrid';
+  const typeInfo = bodyTypeInfo[bodyType as keyof typeof bodyTypeInfo];
+  
+  // Extract target from range (e.g., "75-100" → 87)
+  const getTargetFromRange = (range: string) => {
+    if (!range) return 100;
+    const [min, max] = range.split('–').map(n => parseInt(n.trim()));
+    return Math.round((min + max) / 2);
+  };
+
+  const suggestedTarget = getTargetFromRange(data.sugarpointsRange || '75-100');
+
+  const handleContinue = () => {
+    const stepData: Partial<OnboardingData> = {
+      customTarget: suggestedTarget,
+      targetReason: 'body_type_quiz',
+    };
+    onNext(stepData);
+  };
+
+  return (
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}>
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Your Body Type Results</Text>
+        <Text style={styles.subtitle}>
+          Personalized recommendations based on your metabolic profile
+        </Text>
+      </View>
+
+      {/* Body Type Result Card */}
+      <Card variant="elevated" style={[styles.resultCard, { borderColor: typeInfo.color + '40' }]}>
+        <View style={[styles.resultIcon, { backgroundColor: typeInfo.color + '20' }]}>
+          <Ionicons name={typeInfo.icon as any} size={48} color={typeInfo.color} />
+        </View>
+        
+        <Text style={styles.bodyTypeName}>{bodyType}</Text>
+        <Text style={styles.bodyTypeTitle}>{typeInfo.title}</Text>
+        <Text style={styles.bodyTypeDescription}>{typeInfo.description}</Text>
+        
+        <View style={styles.characteristicsList}>
+          {typeInfo.characteristics.map((characteristic, index) => (
+            <View key={index} style={styles.characteristicItem}>
+              <Ionicons name="checkmark-circle" size={16} color={typeInfo.color} />
+              <Text style={styles.characteristicText}>{characteristic}</Text>
+            </View>
+          ))}
+        </View>
+      </Card>
+
+      {/* SugarPoints Recommendation */}
+      <Card variant="outlined" style={styles.recommendationCard}>
+        <Text style={styles.recommendationTitle}>Your Personalized Target</Text>
+        
+        <View style={styles.targetDisplay}>
+          <ProgressRing
+            progress={75}
+            size={80}
+            strokeWidth={6}
+            color={typeInfo.color}>
+            <Text style={[styles.targetValue, { color: typeInfo.color }]}>
+              {suggestedTarget}
+            </Text>
+          </ProgressRing>
+          
+          <View style={styles.targetInfo}>
+            <Text style={styles.targetRange}>
+              Range: {data.sugarpointsRange || '75-100'}
+            </Text>
+            <Text style={styles.targetLabel}>Daily SugarPoints</Text>
+          </View>
+        </View>
+        
+        <Text style={styles.recommendationDescription}>
+          Based on your {bodyType.toLowerCase()} metabolism, we recommend starting with{' '}
+          <Text style={styles.highlightText}>{suggestedTarget} SugarPoints daily</Text>.
+          You can adjust this as you learn how your body responds.
+        </Text>
+      </Card>
+
+      {/* Health Risk & Recommendations */}
+      {data.healthRisk && (
+        <Card variant="outlined" style={styles.healthRiskCard}>
+          <View style={styles.healthRiskHeader}>
+            <Ionicons name="information-circle-outline" size={24} color={colors.warning[400]} />
+            <Text style={styles.healthRiskTitle}>Health Insights</Text>
+          </View>
+          <Text style={styles.healthRiskText}>{data.healthRisk}</Text>
+        </Card>
+      )}
+
+      {data.recommendations && data.recommendations.length > 0 && (
+        <Card variant="outlined" style={styles.recommendationsCard}>
+          <Text style={styles.recommendationsTitle}>Personalized Tips</Text>
+          {data.recommendations.map((recommendation, index) => (
+            <View key={index} style={styles.recommendationItem}>
+              <Ionicons name="bulb-outline" size={16} color={colors.primary[400]} />
+              <Text style={styles.recommendationText}>{recommendation}</Text>
+            </View>
+          ))}
+        </Card>
+      )}
+
+      {/* Actions */}
+      <View style={styles.actions}>
+        <Button
+          title="Retake Quiz"
+          variant="outline"
+          onPress={onBack}
+          style={styles.retakeButton}
+        />
+        
+        <Button
+          title="Continue Setup"
+          onPress={handleContinue}
+          style={styles.continueButton}
+          size="large"
+        />
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+
+  content: {
+    padding: layout.screenPadding,
+    paddingBottom: spacing.huge,
+  },
+
+  // Header
+  header: {
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+  },
+
+  title: {
+    ...typography.headlineLarge,
+    color: colors.text.primary,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+
+  subtitle: {
+    ...typography.bodyLarge,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+
+  // Result Card
+  resultCard: {
+    alignItems: 'center',
+    padding: spacing.xxl,
+    marginBottom: spacing.xl,
+    borderWidth: 2,
+  },
+
+  resultIcon: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
+  },
+
+  bodyTypeName: {
+    ...typography.displayMedium,
+    color: colors.text.primary,
+    fontWeight: '700',
+    marginBottom: spacing.xs,
+  },
+
+  bodyTypeTitle: {
+    ...typography.headlineSmall,
+    color: colors.text.secondary,
+    marginBottom: spacing.md,
+  },
+
+  bodyTypeDescription: {
+    ...typography.bodyLarge,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: spacing.xl,
+  },
+
+  characteristicsList: {
+    gap: spacing.md,
+    alignSelf: 'stretch',
+  },
+
+  characteristicItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+
+  characteristicText: {
+    ...typography.bodyMedium,
+    color: colors.text.primary,
+    flex: 1,
+  },
+
+  // Recommendation Card
+  recommendationCard: {
+    marginBottom: spacing.xl,
+    backgroundColor: colors.primary[50],
+    borderColor: colors.primary[200],
+  },
+
+  recommendationTitle: {
+    ...typography.headlineSmall,
+    color: colors.text.primary,
+    marginBottom: spacing.lg,
+    textAlign: 'center',
+  },
+
+  targetDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xl,
+    marginBottom: spacing.lg,
+  },
+
+  targetValue: {
+    ...typography.headlineLarge,
+    fontWeight: '700',
+  },
+
+  targetInfo: {
+    alignItems: 'center',
+  },
+
+  targetRange: {
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+
+  targetLabel: {
+    ...typography.labelMedium,
+    color: colors.text.tertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  recommendationDescription: {
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+
+  highlightText: {
+    color: colors.primary[400],
+    fontWeight: '600',
+  },
+
+  // Health Risk Card
+  healthRiskCard: {
+    marginBottom: spacing.xl,
+    backgroundColor: colors.warning[50],
+    borderColor: colors.warning[200],
+  },
+
+  healthRiskHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: spacing.md,
+  },
+
+  healthRiskTitle: {
+    ...typography.titleLarge,
+    color: colors.text.primary,
+  },
+
+  healthRiskText: {
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
+    lineHeight: 22,
+  },
+
+  // Recommendations Card
+  recommendationsCard: {
+    marginBottom: spacing.xl,
+  },
+
+  recommendationsTitle: {
+    ...typography.titleLarge,
+    color: colors.text.primary,
+    marginBottom: spacing.lg,
+  },
+
+  recommendationItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+    marginBottom: spacing.md,
+  },
+
+  recommendationText: {
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
+    flex: 1,
+    lineHeight: 22,
+  },
+
+  // Actions
+  actions: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+
+  retakeButton: {
+    flex: 1,
+  },
+
+  continueButton: {
+    flex: 2,
+  },
+});
