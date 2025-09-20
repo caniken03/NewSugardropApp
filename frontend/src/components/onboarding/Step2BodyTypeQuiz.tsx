@@ -248,6 +248,78 @@ export default function Step2BodyTypeQuiz({ data, onNext, onBack }: Step2Props) 
   const progress = ((currentQuestion + 1) / quizQuestions.length) * 100;
   const answeredCount = Object.keys(responses).length;
 
+  // Render intro screen with your exact guidance
+  if (showIntro) {
+    return (
+      <View style={styles.container}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}>
+          
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Body Type Quiz</Text>
+            <Text style={styles.subtitle}>
+              (This quiz provides a broad assessment and is not medical advice.)
+            </Text>
+          </View>
+
+          {/* Guidance Card */}
+          <Card variant="elevated" style={styles.guidanceCard}>
+            <Text style={styles.guidanceTitle}>
+              Struggling to lose weight or gain muscle? Your body type may play a role.
+            </Text>
+            
+            <Text style={styles.guidanceText}>
+              This quiz is based on the concept of three body types (somatotypes), which describe natural differences in metabolism, muscle, and fat distribution. Your results will suggest a starting daily SugarPoints intake for the SugarDrop lifestyle diet.
+            </Text>
+            
+            <Text style={styles.guidanceText}>
+              The quiz has 15 quick questions. At the end, you'll receive a personalised SugarPoints range to guide your weight and health goals.
+            </Text>
+            
+            <View style={styles.rememberSection}>
+              <Text style={styles.rememberTitle}>Remember:</Text>
+              <View style={styles.bulletPoints}>
+                <Text style={styles.bulletPoint}>• The results are a starting point, not a fixed rule.</Text>
+                <Text style={styles.bulletPoint}>• You can adjust your daily SugarPoints up or down over time.</Text>
+                <Text style={styles.bulletPoint}>• Give any new intake level 3–4 weeks before making changes.</Text>
+              </View>
+            </View>
+            
+            <Text style={styles.guidanceConclusion}>
+              This quiz is designed to help you understand your body type and find the right SugarPoints level for lasting results.
+            </Text>
+            
+            <Text style={styles.instructions}>
+              Carefully review each question or statement, and select the option that most accurately represents you.
+            </Text>
+          </Card>
+
+          {/* Actions */}
+          <View style={styles.introActions}>
+            <Button
+              title="Back"
+              variant="outline"
+              onPress={onBack}
+              style={styles.backButton}
+            />
+            
+            <Button
+              title="Start Quiz"
+              onPress={startQuiz}
+              style={styles.startQuizButton}
+              size="large"
+              icon="arrow-forward"
+              iconPosition="right"
+            />
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* Progress Header */}
