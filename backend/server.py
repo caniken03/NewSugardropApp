@@ -254,7 +254,22 @@ async def get_today_entries(current_user: User = Depends(get_current_user)):
     
     result = supabase.table('food_entries').select('*').eq('user_id', current_user.id).gte('timestamp', today.isoformat()).lt('timestamp', tomorrow.isoformat()).execute()
     
-    entries = [FoodEntry(**entry) for entry in result.data]
+    entries = []
+    for entry_data in result.data:
+        # Handle entries that might not have meal_type column
+        meal_type = entry_data.get('meal_type', 'snack')
+        entry = FoodEntry(
+            id=entry_data['id'],
+            user_id=entry_data['user_id'],
+            name=entry_data['name'],
+            sugar_content=entry_data['sugar_content'],
+            portion_size=entry_data['portion_size'],
+            calories=entry_data.get('calories'),
+            meal_type=meal_type,
+            timestamp=datetime.fromisoformat(entry_data['timestamp'].replace('Z', '+00:00'))
+        )
+        entries.append(entry)
+    
     total_sugar = sum(entry.sugar_content * entry.portion_size for entry in entries)
     
     # Group by meal type
@@ -263,6 +278,9 @@ async def get_today_entries(current_user: User = Depends(get_current_user)):
         meal_type = entry.meal_type or "snack"
         if meal_type in meals:
             meals[meal_type].append(entry)
+        else:
+            # If unknown meal type, put in snack
+            meals["snack"].append(entry)
     
     return {
         "entries": entries,
