@@ -150,28 +150,18 @@ export default function OnboardingScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Show disclaimer first */}
-      {showDisclaimer && (
-        <HealthDisclaimerPopup onAcknowledge={handleDisclaimerComplete} />
-      )}
-      
-      {/* Show onboarding steps after disclaimer */}
-      {!showDisclaimer && (
-        <>
-          {/* Progress Indicator */}
-          <View style={styles.header}>
-            {renderStepIndicator()}
-            <Text style={styles.stepText}>
-              Step {currentStep} of 4
-            </Text>
-          </View>
+      {/* Progress Indicator */}
+      <View style={styles.header}>
+        {renderStepIndicator()}
+        <Text style={styles.stepText}>
+          Step {currentStep} of 4
+        </Text>
+      </View>
 
-          {/* Current Step Content */}
-          <View style={styles.stepContent}>
-            {renderCurrentStep()}
-          </View>
-        </>
-      )}
+      {/* Current Step Content */}
+      <View style={styles.stepContent}>
+        {renderCurrentStep()}
+      </View>
     </SafeAreaView>
   );
 }
