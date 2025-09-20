@@ -101,6 +101,14 @@ class FoodEntryCreate(BaseModel):
     calories: Optional[float] = None  # Deprecated - will be removed
     meal_type: Optional[str] = "snack"
 
+class UserProfileUpdate(BaseModel):
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    activity_level: Optional[str] = None
+    health_goals: Optional[List[str]] = None
+    daily_sugar_points_target: Optional[int] = None
+    completed_onboarding: Optional[bool] = None
+
 class ChatMessage(BaseModel):
     message: str
     image_base64: Optional[str] = None
