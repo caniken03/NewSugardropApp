@@ -168,9 +168,14 @@ const quizQuestions: QuizQuestion[] = [
 ];
 
 export default function Step2BodyTypeQuiz({ data, onNext, onBack }: Step2Props) {
+  const [showIntro, setShowIntro] = useState(true);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
+
+  const startQuiz = () => {
+    setShowIntro(false);
+  };
 
   const handleResponse = (questionId: number, value: string) => {
     setResponses(prev => ({ ...prev, [questionId]: value }));
