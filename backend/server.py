@@ -108,6 +108,77 @@ class ImageRecognitionRequest(BaseModel):
 class BarcodeRequest(BaseModel):
     barcode: str
 
+# SugarPoints Calculation Functions
+def calculate_sugar_points(carbs_per_100g: float, portion_size_grams: float) -> dict:
+    """
+    Calculate SugarPoints based on total carbohydrate content
+    1 SugarPoint = 1g total carbohydrates (rounded to nearest whole number)
+    1 SugarPoint Block = 6 SugarPoints (rounded to nearest 6g total carbohydrates)
+    """
+    if carbs_per_100g == 0:
+        return {
+            "sugar_points": 0,
+            "sugar_points_text": "Nil SugarPoints",
+            "sugar_point_blocks": 0,
+            "sugar_point_blocks_text": "0 Blocks"
+        }
+    
+    # Calculate total carbs for the portion
+    total_carbs = (carbs_per_100g * portion_size_grams) / 100
+    
+    # Round to nearest whole number for SugarPoints
+    sugar_points = round(total_carbs)
+    
+    # Calculate SugarPoint Blocks (rounded to nearest 6)
+    sugar_point_blocks = round(sugar_points / 6)
+    
+    return {
+        "sugar_points": sugar_points,
+        "sugar_points_text": f"{sugar_points} SugarPoints",
+        "sugar_point_blocks": sugar_point_blocks,
+        "sugar_point_blocks_text": f"{sugar_point_blocks} Blocks"
+    }
+
+def extract_nutrition_values(passio_item: dict) -> dict:
+    """
+    Extract carbs, fat, and protein values from Passio nutrition data
+    Returns values per 100g
+    """
+    nutrients = passio_item.get("nutrients", {})
+    
+    # Extract carbohydrates
+    carbs_keys = ["carbohydrates", "carbs", "total_carbs", "carbohydrate_g"]
+    carbs_per_100g = 0.0
+    for key in carbs_keys:
+        if key in nutrients:
+            value = nutrients[key]
+            carbs_per_100g = float(value.get("quantity", 0) if isinstance(value, dict) else value)
+            break
+    
+    # Extract fat
+    fat_keys = ["fat", "total_fat", "fat_g"]
+    fat_per_100g = 0.0
+    for key in fat_keys:
+        if key in nutrients:
+            value = nutrients[key]
+            fat_per_100g = float(value.get("quantity", 0) if isinstance(value, dict) else value)
+            break
+    
+    # Extract protein
+    protein_keys = ["protein", "protein_g"]
+    protein_per_100g = 0.0
+    for key in protein_keys:
+        if key in nutrients:
+            value = nutrients[key]
+            protein_per_100g = float(value.get("quantity", 0) if isinstance(value, dict) else value)
+            break
+    
+    return {
+        "carbs_per_100g": carbs_per_100g,
+        "fat_per_100g": fat_per_100g,
+        "protein_per_100g": protein_per_100g
+    }
+
 # Utility functions
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
