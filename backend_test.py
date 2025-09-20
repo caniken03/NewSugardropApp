@@ -257,11 +257,11 @@ class SugarDropAPITester:
             self.log_result("food_tracking", "Food entries list", False, str(e))
     
     def test_today_entries(self):
-        """Test today's entries summary"""
-        print("\n=== Testing Today's Entries Summary ===")
+        """Test today's entries summary with meal grouping"""
+        print("\n=== Testing Today's Entries Summary with Meal Grouping ===")
         
         if not self.auth_token:
-            self.log_result("food_tracking", "Today's entries", False, "No auth token")
+            self.log_result("meal_categorization", "Today's entries with meals", False, "No auth token")
             return
         
         headers = {"Authorization": f"Bearer {self.auth_token}"}
@@ -275,16 +275,256 @@ class SugarDropAPITester:
             
             if response.status_code == 200:
                 data = response.json()
-                required_fields = ["entries", "total_sugar", "daily_goal", "percentage"]
+                required_fields = ["entries", "meals", "total_sugar", "daily_goal", "percentage"]
                 if all(field in data for field in required_fields):
-                    self.log_result("food_tracking", "Today's entries", True)
-                    print(f"   Total sugar: {data['total_sugar']}g / {data['daily_goal']}g ({data['percentage']:.1f}%)")
+                    # Check if meals object has the expected structure
+                    meals = data.get("meals", {})
+                    expected_meal_types = ["breakfast", "lunch", "dinner", "snack"]
+                    if all(meal_type in meals for meal_type in expected_meal_types):
+                        self.log_result("meal_categorization", "Today's entries with meals", True)
+                        print(f"   Total sugar: {data['total_sugar']}g / {data['daily_goal']}g ({data['percentage']:.1f}%)")
+                        print(f"   Meal breakdown: {[(k, len(v)) for k, v in meals.items()]}")
+                    else:
+                        self.log_result("meal_categorization", "Today's entries with meals", False, "Missing meal categories in response")
                 else:
-                    self.log_result("food_tracking", "Today's entries", False, "Missing required fields in response")
+                    self.log_result("meal_categorization", "Today's entries with meals", False, "Missing required fields in response")
             else:
-                self.log_result("food_tracking", "Today's entries", False, f"HTTP {response.status_code}: {response.text}")
+                self.log_result("meal_categorization", "Today's entries with meals", False, f"HTTP {response.status_code}: {response.text}")
         except Exception as e:
-            self.log_result("food_tracking", "Today's entries", False, str(e))
+            self.log_result("meal_categorization", "Today's entries with meals", False, str(e))
+    
+    def test_passio_food_search(self):
+        """Test Passio food search API"""
+        print("\n=== Testing Passio Food Search API ===")
+        
+        if not self.auth_token:
+            self.log_result("passio_integration", "Food search", False, "No auth token")
+            return
+        
+        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        
+        # Test search for "apple"
+        search_data = {
+            "query": "apple",
+            "limit": 10
+        }
+        
+        try:
+            response = requests.post(
+                f"{self.base_url}/food/search",
+                json=search_data,
+                headers=headers,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["results", "query", "count", "source"]
+                if all(field in data for field in required_fields):
+                    results = data.get("results", [])
+                    if len(results) > 0:
+                        # Check if results have expected structure
+                        first_result = results[0]
+                        expected_result_fields = ["id", "name", "sugar_per_100g", "calories_per_100g"]
+                        if all(field in first_result for field in expected_result_fields):
+                            self.log_result("passio_integration", "Food search - apple", True)
+                            print(f"   Found {len(results)} results for 'apple'")
+                            print(f"   First result: {first_result['name']} - {first_result['sugar_per_100g']}g sugar/100g")
+                        else:
+                            self.log_result("passio_integration", "Food search - apple", False, "Results missing expected fields")
+                    else:
+                        self.log_result("passio_integration", "Food search - apple", False, "No results returned")
+                else:
+                    self.log_result("passio_integration", "Food search - apple", False, "Missing required response fields")
+            else:
+                self.log_result("passio_integration", "Food search - apple", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("passio_integration", "Food search - apple", False, str(e))
+        
+        # Test search for "chocolate"
+        search_data = {
+            "query": "chocolate",
+            "limit": 10
+        }
+        
+        try:
+            response = requests.post(
+                f"{self.base_url}/food/search",
+                json=search_data,
+                headers=headers,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "results" in data and len(data["results"]) > 0:
+                    self.log_result("passio_integration", "Food search - chocolate", True)
+                    print(f"   Found {len(data['results'])} results for 'chocolate'")
+                else:
+                    self.log_result("passio_integration", "Food search - chocolate", False, "No results for chocolate")
+            else:
+                self.log_result("passio_integration", "Food search - chocolate", False, f"HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("passio_integration", "Food search - chocolate", False, str(e))
+    
+    def test_passio_popular_foods(self):
+        """Test Passio popular foods API"""
+        print("\n=== Testing Passio Popular Foods API ===")
+        
+        if not self.auth_token:
+            self.log_result("passio_integration", "Popular foods", False, "No auth token")
+            return
+        
+        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        
+        # Test popular foods without category
+        try:
+            response = requests.get(
+                f"{self.base_url}/food/popular",
+                headers=headers,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "results" in data and len(data["results"]) > 0:
+                    self.log_result("passio_integration", "Popular foods - no category", True)
+                    print(f"   Found {len(data['results'])} popular foods")
+                else:
+                    self.log_result("passio_integration", "Popular foods - no category", False, "No popular foods returned")
+            else:
+                self.log_result("passio_integration", "Popular foods - no category", False, f"HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("passio_integration", "Popular foods - no category", False, str(e))
+        
+        # Test popular foods with fruits category
+        try:
+            response = requests.get(
+                f"{self.base_url}/food/popular?category=fruits",
+                headers=headers,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "results" in data:
+                    self.log_result("passio_integration", "Popular foods - fruits", True)
+                    print(f"   Found {len(data['results'])} popular fruits")
+                else:
+                    self.log_result("passio_integration", "Popular foods - fruits", False, "No results field")
+            else:
+                self.log_result("passio_integration", "Popular foods - fruits", False, f"HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("passio_integration", "Popular foods - fruits", False, str(e))
+        
+        # Test popular foods with vegetables category
+        try:
+            response = requests.get(
+                f"{self.base_url}/food/popular?category=vegetables",
+                headers=headers,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "results" in data:
+                    self.log_result("passio_integration", "Popular foods - vegetables", True)
+                    print(f"   Found {len(data['results'])} popular vegetables")
+                else:
+                    self.log_result("passio_integration", "Popular foods - vegetables", False, "No results field")
+            else:
+                self.log_result("passio_integration", "Popular foods - vegetables", False, f"HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("passio_integration", "Popular foods - vegetables", False, str(e))
+    
+    def test_food_recognition(self):
+        """Test Passio food recognition API"""
+        print("\n=== Testing Passio Food Recognition API ===")
+        
+        if not self.auth_token:
+            self.log_result("passio_integration", "Food recognition", False, "No auth token")
+            return
+        
+        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        
+        # Create a simple base64 encoded test image (1x1 pixel PNG)
+        test_image_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg=="
+        
+        recognition_data = {
+            "image_base64": test_image_base64
+        }
+        
+        try:
+            response = requests.post(
+                f"{self.base_url}/food/recognize",
+                json=recognition_data,
+                headers=headers,
+                timeout=20
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "results" in data and "count" in data and "source" in data:
+                    self.log_result("passio_integration", "Food recognition", True)
+                    print(f"   Recognition returned {data['count']} results")
+                    if data["results"]:
+                        print(f"   First result: {data['results'][0].get('name', 'Unknown')}")
+                else:
+                    self.log_result("passio_integration", "Food recognition", False, "Missing expected response fields")
+            elif response.status_code == 403:
+                self.log_result("passio_integration", "Food recognition", False, "API access forbidden - may need valid Passio API key")
+            else:
+                self.log_result("passio_integration", "Food recognition", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("passio_integration", "Food recognition", False, str(e))
+    
+    def test_meal_categorization(self):
+        """Test food entries with different meal types"""
+        print("\n=== Testing Meal Categorization ===")
+        
+        if not self.auth_token:
+            self.log_result("meal_categorization", "Meal type entries", False, "No auth token")
+            return
+        
+        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        
+        # Test creating entries with different meal types
+        meal_types = ["breakfast", "lunch", "dinner", "snack"]
+        foods = [
+            {"name": "Oatmeal with Berries", "sugar_content": 8.5, "portion_size": 1.0, "calories": 150},
+            {"name": "Grilled Chicken Salad", "sugar_content": 3.2, "portion_size": 1.0, "calories": 280},
+            {"name": "Salmon with Vegetables", "sugar_content": 2.1, "portion_size": 1.0, "calories": 350},
+            {"name": "Mixed Nuts", "sugar_content": 1.5, "portion_size": 0.5, "calories": 180}
+        ]
+        
+        created_entries = []
+        
+        for i, meal_type in enumerate(meal_types):
+            food_data = foods[i].copy()
+            food_data["meal_type"] = meal_type
+            
+            try:
+                response = requests.post(
+                    f"{self.base_url}/food/entries",
+                    json=food_data,
+                    headers=headers,
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if "meal_type" in data and data["meal_type"] == meal_type:
+                        self.log_result("meal_categorization", f"Food entry - {meal_type}", True)
+                        created_entries.append(data["id"])
+                        print(f"   Created {meal_type} entry: {data['name']}")
+                    else:
+                        self.log_result("meal_categorization", f"Food entry - {meal_type}", False, "meal_type not preserved")
+                else:
+                    self.log_result("meal_categorization", f"Food entry - {meal_type}", False, f"HTTP {response.status_code}")
+            except Exception as e:
+                self.log_result("meal_categorization", f"Food entry - {meal_type}", False, str(e))
+        
+        print(f"   Created {len(created_entries)} meal entries for testing")
     
     def test_ai_chat(self):
         """Test AI chat endpoint"""
