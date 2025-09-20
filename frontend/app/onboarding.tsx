@@ -24,11 +24,18 @@ export interface OnboardingData {
   activityLevel?: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active';
   healthGoals?: string[];
   
-  // Step 2 - SugarPoints Target
+  // Step 2 - Body Type Quiz Results
+  bodyType?: 'Ectomorph' | 'Mesomorph' | 'Endomorph' | 'Hybrid';
+  sugarpointsRange?: string;
+  onboardingPath?: string;
+  healthRisk?: string;
+  recommendations?: string[];
+  
+  // Step 3 - SugarPoints Target (now uses quiz results)
   customTarget?: number;
   targetReason?: string;
   
-  // Step 3 - Tutorial
+  // Step 4 - Tutorial
   completedTutorial?: boolean;
 }
 
