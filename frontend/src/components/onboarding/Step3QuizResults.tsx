@@ -20,50 +20,26 @@ const bodyTypeInfo = {
   Ectomorph: {
     icon: 'flash-outline',
     color: colors.success[400],
-    title: 'Fast Metabolism',
-    description: 'You have a naturally fast metabolism and can handle higher carbohydrate intake.',
-    characteristics: [
-      'Burns calories quickly',
-      'Struggles to gain weight',
-      'High energy, sometimes restless',
-      'Can tolerate more SugarPoints'
-    ]
+    title: 'A: Ectomorph',
+    range: '100 – 125 SugarPoints',
   },
   Mesomorph: {
     icon: 'fitness-outline',
     color: colors.primary[400],
-    title: 'Balanced Metabolism',
-    description: 'You have a naturally balanced metabolism that responds well to lifestyle changes.',
-    characteristics: [
-      'Builds muscle easily',
-      'Moderate weight management',
-      'Good energy levels',
-      'Balanced SugarPoints needs'
-    ]
+    title: 'B: Mesomorph',
+    range: '75 – 100 SugarPoints',
   },
   Endomorph: {
     icon: 'leaf-outline',
     color: colors.warning[400],
-    title: 'Efficient Metabolism',
-    description: 'You have an efficient metabolism that benefits from a more conservative carbohydrate approach.',
-    characteristics: [
-      'Stores energy efficiently',
-      'Gains weight easily',
-      'Benefits from lower carbs',
-      'Lower SugarPoints target'
-    ]
+    title: 'C: Endomorph',
+    range: '50 – 75 SugarPoints',
   },
   Hybrid: {
     icon: 'options-outline',
     color: colors.neutral[500],
-    title: 'Mixed Metabolism',
-    description: 'You show characteristics of multiple body types, giving you flexibility in approach.',
-    characteristics: [
-      'Varied metabolic responses',
-      'Benefits from experimentation',
-      'Adaptable to different approaches',
-      'Flexible SugarPoints range'
-    ]
+    title: 'Hybrid Body Type',
+    range: '75 – 125 SugarPoints',
   }
 };
 
