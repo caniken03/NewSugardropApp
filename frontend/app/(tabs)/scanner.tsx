@@ -78,26 +78,63 @@ function ScannerContent() {
   const analyzeImage = async (imageUri: string) => {
     setLoading(true);
     try {
-      // Simulate AI analysis - in real app, this would call the backend
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Convert image to base64
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
+      const reader = new FileReader();
       
-      // Mock analysis result
-      const mockResult = {
-        detectedFoods: [
-          {
-            name: 'Apple',
-            confidence: 0.95,
-            sugar_per_100g: 10.4,
-            calories_per_100g: 52,
-            estimated_weight: 150,
-          },
-        ],
+      reader.onloadend = async () => {
+        try {
+          const base64Data = (reader.result as string).split(',')[1]; // Remove data:image/jpeg;base64, prefix
+          
+          // Send to Passio AI for recognition
+          const apiResponse = await apiClient.post('/food/recognize', {
+            image_base64: base64Data
+          });
+          
+          const recognitionResults = apiResponse.data.results || [];
+          
+          if (recognitionResults.length > 0) {
+            setAnalysisResult({
+              detectedFoods: recognitionResults.map((food: any) => ({
+                name: food.name,
+                confidence: food.confidence,
+                sugar_per_100g: food.sugar_per_100g,
+                calories_per_100g: food.calories_per_100g,
+                estimated_weight: food.estimated_weight || 100,
+                category: food.category,
+                passio_id: food.id
+              }))
+            });
+          } else {
+            // Fallback to mock data if no recognition results
+            const mockResult = {
+              detectedFoods: [
+                {
+                  name: 'Unknown Food',
+                  confidence: 0.5,
+                  sugar_per_100g: 5.0,
+                  calories_per_100g: 100,
+                  estimated_weight: 100,
+                  category: 'General'
+                },
+              ],
+            };
+            setAnalysisResult(mockResult);
+          }
+        } catch (error) {
+          console.error('Food recognition error:', error);
+          Alert.alert('Recognition Failed', 'Could not identify the food. Please try again.');
+          setAnalysisResult(null);
+        }
       };
       
-      setAnalysisResult(mockResult);
+      reader.readAsDataURL(blob);
+      
     } catch (error) {
-      Alert.alert('Error', 'Failed to analyze image. Please try again.');
-      console.error('Image analysis error:', error);
+      Alert.alert('Error', 'Failed to process image. Please try again.');
+      console.error('Image processing error:', error);
+      setAnalysisResult(null);
     } finally {
       setLoading(false);
     }
