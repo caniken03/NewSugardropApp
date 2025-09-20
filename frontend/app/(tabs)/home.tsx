@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { apiClient } from '../../src/services/api';
+import { webSafeShadow } from '../../src/utils/styles';
 import LoadingSpinner from '../../src/components/LoadingSpinner';
 import ProgressCircle from '../../src/components/ProgressCircle';
 
