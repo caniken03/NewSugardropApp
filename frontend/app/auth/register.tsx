@@ -76,161 +76,147 @@ export default function RegisterScreen() {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
+        <LoadingSpinner />
+      </View>
+    );
   }
-
-  const containerStyle = toStyle([
-    styles.container,
-    { backgroundColor: colors.background }
-  ]);
-
-  const scrollContentStyle = toStyle([
-    styles.scrollContent,
-    { paddingTop: insets.top + 40 }
-  ]);
-
-  const inputStyle = {
-    height: 52,
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    color: colors.text,
-  };
-
-  const buttonStyle = toStyle([
-    styles.registerButton,
-    { backgroundColor: colors.primary }
-  ]);
 
   return (
     <KeyboardAvoidingView
-      style={containerStyle}
+      style={[styles.container, { paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
-        contentContainerStyle={scrollContentStyle}
-        showsVerticalScrollIndicator={false}>
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled">
         
         {/* Header */}
         <View style={styles.header}>
-          <View style={toStyle([styles.logoContainer, { backgroundColor: colors.primary }])}>
-            <Ionicons name="water" size={32} color="#ffffff" />
+          <View style={styles.logoContainer}>
+            <Ionicons name="water" size={40} color={colors.primary[400]} />
           </View>
-          <Text style={toStyle([styles.title, { color: colors.text }])}>
-            Create Account
-          </Text>
-          <Text style={toStyle([styles.subtitle, { color: colors.textSecondary }])}>
-            Start your journey to better sugar management
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>
+            Join SugarDrop to start tracking your SugarPoints
           </Text>
         </View>
 
         {/* Form */}
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={toStyle([styles.label, { color: colors.text }])}>Full Name</Text>
+            <Text style={styles.label}>Full Name</Text>
             <TextInput
-              style={inputStyle}
+              style={styles.input}
               value={formData.name}
               onChangeText={(value) => updateFormData('name', value)}
               placeholder="Enter your full name"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={colors.text.tertiary}
               autoCapitalize="words"
               autoCorrect={false}
+              accessibilityLabel="Full name input"
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={toStyle([styles.label, { color: colors.text }])}>Email</Text>
+            <Text style={styles.label}>Email</Text>
             <TextInput
-              style={inputStyle}
+              style={styles.input}
               value={formData.email}
               onChangeText={(value) => updateFormData('email', value)}
               placeholder="Enter your email"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={colors.text.tertiary}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              accessibilityLabel="Email input"
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={toStyle([styles.label, { color: colors.text }])}>Password</Text>
+            <Text style={styles.label}>Password</Text>
             <View style={styles.passwordContainer}>
               <TextInput
-                style={toStyle([inputStyle, { paddingRight: 50 }])}
+                style={[styles.input, styles.passwordInput]}
                 value={formData.password}
                 onChangeText={(value) => updateFormData('password', value)}
-                placeholder="Create a password"
-                placeholderTextColor={colors.textSecondary}
+                placeholder="Enter your password"
+                placeholderTextColor={colors.text.tertiary}
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
                 autoCorrect={false}
+                accessibilityLabel="Password input"
               />
               <TouchableOpacity
                 style={styles.eyeButton}
-                onPress={() => setShowPassword(!showPassword)}>
+                onPress={() => setShowPassword(!showPassword)}
+                accessibilityLabel={showPassword ? "Hide password" : "Show password"}>
                 <Ionicons
-                  name={showPassword ? 'eye-off' : 'eye'}
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color={colors.textSecondary}
+                  color={colors.text.tertiary}
                 />
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={toStyle([styles.label, { color: colors.text }])}>Confirm Password</Text>
+            <Text style={styles.label}>Confirm Password</Text>
             <TextInput
-              style={inputStyle}
+              style={styles.input}
               value={formData.confirmPassword}
               onChangeText={(value) => updateFormData('confirmPassword', value)}
               placeholder="Confirm your password"
-              placeholderTextColor={colors.textSecondary}
-              secureTextEntry={!showPassword}
+              placeholderTextColor={colors.text.tertiary}
+              secureTextEntry={true}
               autoCapitalize="none"
               autoCorrect={false}
+              accessibilityLabel="Confirm password input"
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={toStyle([styles.label, { color: colors.text }])}>
-              Daily Sugar Goal (grams)
+            <Text style={styles.label}>
+              Daily SugarPoints Goal (Optional)
             </Text>
             <TextInput
-              style={inputStyle}
+              style={styles.input}
               value={formData.dailyGoal}
               onChangeText={(value) => updateFormData('dailyGoal', value)}
-              placeholder="50"
-              placeholderTextColor={colors.textSecondary}
+              placeholder="100"
+              placeholderTextColor={colors.text.tertiary}
               keyboardType="numeric"
+              accessibilityLabel="Daily SugarPoints goal input"
             />
-            <Text style={toStyle([styles.helperText, { color: colors.textSecondary }])}>
-              Recommended: 25-50g per day
+            <Text style={styles.helperText}>
+              We'll help you personalize this in your onboarding quiz
             </Text>
           </View>
 
-          <TouchableOpacity
-            style={buttonStyle}
+          <Button
+            title="Create Account"
             onPress={handleRegister}
-            disabled={loading}>
-            <Text style={styles.registerButtonText}>Create Account</Text>
-          </TouchableOpacity>
+            disabled={loading}
+            loading={loading}
+            size="large"
+            fullWidth
+            style={styles.registerButton}
+          />
 
           <View style={styles.divider}>
-            <View style={toStyle([styles.dividerLine, { backgroundColor: colors.border }])} />
-            <Text style={toStyle([styles.dividerText, { color: colors.textSecondary }])}>or</Text>
-            <View style={toStyle([styles.dividerLine, { backgroundColor: colors.border }])} />
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
           </View>
 
-          <Link href="/auth/login" asChild>
-            <TouchableOpacity style={toStyle([styles.loginButton, { borderColor: colors.border }])}>
-              <Text style={toStyle([styles.loginButtonText, { color: colors.text }])}>
-                Already have an account? Sign In
-              </Text>
-            </TouchableOpacity>
-          </Link>
+          <Button
+            title="Sign In Instead"
+            variant="outline"
+            onPress={() => router.push('/auth/login')}
+            size="large"
+            fullWidth
+          />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
