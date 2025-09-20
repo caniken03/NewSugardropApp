@@ -75,6 +75,7 @@ export default function AddEntryModal() {
         sugar_content: sugarValue / 100, // Convert to sugar per gram
         portion_size: portionValue,
         calories: caloriesValue > 0 ? caloriesValue / 100 : null, // Convert to calories per gram
+        meal_type: formData.mealType,
       });
 
       Alert.alert('Success', 'Food entry added successfully!', [
