@@ -17,7 +17,6 @@ import { apiClient } from '../../src/services/api';
 import LoadingSpinner from '../../src/components/LoadingSpinner';
 
 export default function AddEntryModal() {
-  const { colors } = useTheme();
   const params = useLocalSearchParams();
   
   const [formData, setFormData] = useState({
