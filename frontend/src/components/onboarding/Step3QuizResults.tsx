@@ -84,18 +84,11 @@ export default function Step3QuizResults({ data, onNext, onBack }: Step3Props) {
           <Ionicons name={typeInfo.icon as any} size={48} color={typeInfo.color} />
         </View>
         
-        <Text style={styles.bodyTypeName}>{bodyType}</Text>
-        <Text style={styles.bodyTypeTitle}>{typeInfo.title}</Text>
-        <Text style={styles.bodyTypeDescription}>{typeInfo.description}</Text>
+        <Text style={styles.bodyTypeName}>{typeInfo.title}</Text>
+        <Text style={styles.bodyTypeRange}>Daily SugarPoint Intake Range: {typeInfo.range}</Text>
         
-        <View style={styles.characteristicsList}>
-          {typeInfo.characteristics.map((characteristic, index) => (
-            <View key={index} style={styles.characteristicItem}>
-              <Ionicons name="checkmark-circle" size={16} color={typeInfo.color} />
-              <Text style={styles.characteristicText}>{characteristic}</Text>
-            </View>
-          ))}
-        </View>
+        {/* Your exact description text */}
+        <Text style={styles.bodyTypeDescription}>{data.healthRisk}</Text>
       </Card>
 
       {/* SugarPoints Recommendation */}
@@ -122,34 +115,22 @@ export default function Step3QuizResults({ data, onNext, onBack }: Step3Props) {
         </View>
         
         <Text style={styles.recommendationDescription}>
-          Based on your {bodyType.toLowerCase()} metabolism, we recommend starting with{' '}
+          Based on your quiz results, we recommend starting with{' '}
           <Text style={styles.highlightText}>{suggestedTarget} SugarPoints daily</Text>.
           You can adjust this as you learn how your body responds.
         </Text>
       </Card>
 
-      {/* Health Risk & Recommendations */}
-      {data.healthRisk && (
-        <Card variant="outlined" style={styles.healthRiskCard}>
-          <View style={styles.healthRiskHeader}>
-            <Ionicons name="information-circle-outline" size={24} color={colors.warning[400]} />
-            <Text style={styles.healthRiskTitle}>Health Insights</Text>
-          </View>
-          <Text style={styles.healthRiskText}>{data.healthRisk}</Text>
-        </Card>
-      )}
-
-      {data.recommendations && data.recommendations.length > 0 && (
-        <Card variant="outlined" style={styles.recommendationsCard}>
-          <Text style={styles.recommendationsTitle}>Personalized Tips</Text>
-          {data.recommendations.map((recommendation, index) => (
-            <View key={index} style={styles.recommendationItem}>
-              <Ionicons name="bulb-outline" size={16} color={colors.primary[400]} />
-              <Text style={styles.recommendationText}>{recommendation}</Text>
-            </View>
-          ))}
-        </Card>
-      )}
+      {/* Medical Disclaimer */}
+      <Card variant="outlined" style={styles.disclaimerCard}>
+        <View style={styles.disclaimerHeader}>
+          <Ionicons name="information-circle-outline" size={20} color={colors.neutral[500]} />
+          <Text style={styles.disclaimerTitle}>Medical Disclaimer</Text>
+        </View>
+        <Text style={styles.disclaimerText}>
+          This quiz provides a broad assessment and is not intended for medical advice.
+        </Text>
+      </Card>
 
       {/* Actions */}
       <View style={styles.actions}>
