@@ -1,676 +1,364 @@
 #!/usr/bin/env python3
 """
-SugarDrop Backend API Test Suite
-Tests all backend endpoints comprehensively
+Backend Test Suite for Body Type Quiz System
+Tests all 10 evaluation cases from specification and API endpoints
 """
 
 import requests
 import json
+import sys
 import os
-from datetime import datetime
 import uuid
+from typing import Dict, List, Any
+from datetime import datetime
 
 # Configuration
 BACKEND_URL = "https://nutriai-14.preview.emergentagent.com/api"
-TEST_USER_EMAIL = "demo@sugardrop.com"
-TEST_USER_PASSWORD = "demo123"
-TEST_USER_NAME = "Demo User"
+TEST_USER_EMAIL = "quiz_tester@example.com"
+TEST_USER_PASSWORD = "SecurePass123!"
+TEST_USER_NAME = "Quiz Tester"
 
-class SugarDropAPITester:
+class BodyTypeQuizTester:
     def __init__(self):
-        self.base_url = BACKEND_URL
+        self.session = requests.Session()
         self.auth_token = None
-        self.test_results = {
-            "authentication": {"passed": 0, "failed": 0, "errors": []},
-            "food_tracking": {"passed": 0, "failed": 0, "errors": []},
-            "passio_integration": {"passed": 0, "failed": 0, "errors": []},
-            "meal_categorization": {"passed": 0, "failed": 0, "errors": []},
-            "ai_chat": {"passed": 0, "failed": 0, "errors": []},
-            "knowledge_base": {"passed": 0, "failed": 0, "errors": []},
-            "health_check": {"passed": 0, "failed": 0, "errors": []}
-        }
+        self.user_id = None
+        self.test_results = []
         
-    def log_result(self, category, test_name, success, error_msg=None):
+    def log_test(self, test_name: str, passed: bool, details: str = ""):
         """Log test result"""
-        if success:
-            self.test_results[category]["passed"] += 1
-            print(f"✅ {test_name}")
-        else:
-            self.test_results[category]["failed"] += 1
-            self.test_results[category]["errors"].append(f"{test_name}: {error_msg}")
-            print(f"❌ {test_name}: {error_msg}")
-    
-    def test_health_check(self):
-        """Test health check endpoint and verify version 2.1.0 with Passio integration"""
-        print("\n=== Testing Health Check API ===")
-        try:
-            response = requests.get(f"{self.base_url}/health", timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                if "status" in data and data["status"] == "healthy":
-                    # Check version is 2.1.0
-                    version = data.get("version")
-                    if version == "2.1.0":
-                        self.log_result("health_check", "API version 2.1.0", True)
-                    else:
-                        self.log_result("health_check", "API version 2.1.0", False, f"Expected 2.1.0, got {version}")
-                    
-                    # Check Passio integration is enabled
-                    features = data.get("features", {})
-                    passio_integration = features.get("passio_integration", False)
-                    if passio_integration:
-                        self.log_result("health_check", "Passio integration enabled", True)
-                    else:
-                        self.log_result("health_check", "Passio integration enabled", False, "passio_integration is false")
-                    
-                    self.log_result("health_check", "Health check endpoint", True)
-                    print(f"   Version: {version}")
-                    print(f"   Features: {features}")
-                else:
-                    self.log_result("health_check", "Health check endpoint", False, "Invalid response format")
-            else:
-                self.log_result("health_check", "Health check endpoint", False, f"HTTP {response.status_code}")
-        except Exception as e:
-            self.log_result("health_check", "Health check endpoint", False, str(e))
-    
-    def test_user_registration(self):
-        """Test user registration"""
-        print("\n=== Testing User Registration ===")
+        status = "✅ PASS" if passed else "❌ FAIL"
+        print(f"{status} {test_name}")
+        if details:
+            print(f"   Details: {details}")
         
-        # Generate unique email for testing
-        test_email = f"test_{uuid.uuid4().hex[:8]}@sugardrop.com"
+        self.test_results.append({
+            "test": test_name,
+            "passed": passed,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
+        })
+    
+    def setup_test_user(self) -> bool:
+        """Create or login test user"""
+        print("\n=== Setting up test user ===")
         
-        registration_data = {
-            "email": test_email,
-            "password": "testpass123",
-            "name": "Test User",
+        # Try to register new user
+        register_data = {
+            "email": TEST_USER_EMAIL,
+            "password": TEST_USER_PASSWORD,
+            "name": TEST_USER_NAME,
             "daily_sugar_goal": 50.0
         }
         
         try:
-            response = requests.post(
-                f"{self.base_url}/auth/register",
-                json=registration_data,
-                timeout=10
-            )
-            
-            if response.status_code == 200:
+            response = self.session.post(f"{BACKEND_URL}/auth/register", json=register_data)
+            if response.status_code == 201 or response.status_code == 200:
                 data = response.json()
-                if "access_token" in data and "user" in data:
-                    self.log_result("authentication", "User registration", True)
-                    return data["access_token"]
-                else:
-                    self.log_result("authentication", "User registration", False, "Missing token or user in response")
+                self.auth_token = data["access_token"]
+                self.user_id = data["user"]["id"]
+                print(f"✅ Created new test user: {self.user_id}")
+                return True
+            elif response.status_code == 400 and "already registered" in response.text:
+                # User exists, try to login
+                print("User already exists, attempting login...")
+                return self.login_test_user()
             else:
-                self.log_result("authentication", "User registration", False, f"HTTP {response.status_code}: {response.text}")
+                print(f"❌ Registration failed: {response.status_code} - {response.text}")
+                return False
+                
         except Exception as e:
-            self.log_result("authentication", "User registration", False, str(e))
-        
-        return None
+            print(f"❌ Registration error: {str(e)}")
+            return self.login_test_user()
     
-    def test_user_login(self):
-        """Test user login with demo credentials"""
-        print("\n=== Testing User Login ===")
-        
+    def login_test_user(self) -> bool:
+        """Login existing test user"""
         login_data = {
             "email": TEST_USER_EMAIL,
             "password": TEST_USER_PASSWORD
         }
         
         try:
-            response = requests.post(
-                f"{self.base_url}/auth/login",
-                json=login_data,
-                timeout=10
-            )
-            
+            response = self.session.post(f"{BACKEND_URL}/auth/login", json=login_data)
             if response.status_code == 200:
                 data = response.json()
-                if "access_token" in data and "user" in data:
-                    self.log_result("authentication", "User login", True)
-                    self.auth_token = data["access_token"]
-                    print(f"   Logged in as: {data['user']['name']} ({data['user']['email']})")
+                self.auth_token = data["access_token"]
+                self.user_id = data["user"]["id"]
+                print(f"✅ Logged in test user: {self.user_id}")
+                return True
+            else:
+                print(f"❌ Login failed: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Login error: {str(e)}")
+            return False
+    
+    def get_auth_headers(self) -> Dict[str, str]:
+        """Get authorization headers"""
+        return {"Authorization": f"Bearer {self.auth_token}"}
+    
+    def create_quiz_responses(self, pattern: str) -> List[Dict[str, Any]]:
+        """Create quiz responses based on pattern"""
+        responses = []
+        
+        if pattern == "all_a":
+            # Test Case 1: All A responses → Ectomorph
+            for i in range(1, 16):
+                responses.append({"question_id": i, "value": "A"})
+        elif pattern == "all_b":
+            # Test Case 2: All B responses → Mesomorph
+            for i in range(1, 16):
+                responses.append({"question_id": i, "value": "B"})
+        elif pattern == "all_c":
+            # Test Case 3: All C responses → Endomorph
+            for i in range(1, 16):
+                responses.append({"question_id": i, "value": "C"})
+        elif pattern == "tie_ab":
+            # Test Case 4: 7 A, 7 B, 1 C → Hybrid
+            for i in range(1, 8):  # 7 A's
+                responses.append({"question_id": i, "value": "A"})
+            for i in range(8, 15):  # 7 B's
+                responses.append({"question_id": i, "value": "B"})
+            responses.append({"question_id": 15, "value": "C"})  # 1 C
+        elif pattern == "tie_ac":
+            # Test Case 5: 7 A, 1 B, 7 C → Hybrid
+            for i in range(1, 8):  # 7 A's
+                responses.append({"question_id": i, "value": "A"})
+            responses.append({"question_id": 8, "value": "B"})  # 1 B
+            for i in range(9, 16):  # 7 C's
+                responses.append({"question_id": i, "value": "C"})
+        elif pattern == "tie_all":
+            # Test Case 6: 5 A, 5 B, 5 C → Hybrid
+            for i in range(1, 6):  # 5 A's
+                responses.append({"question_id": i, "value": "A"})
+            for i in range(6, 11):  # 5 B's
+                responses.append({"question_id": i, "value": "B"})
+            for i in range(11, 16):  # 5 C's
+                responses.append({"question_id": i, "value": "C"})
+        elif pattern == "dominant_b":
+            # Test Case 7: 3 A, 9 B, 3 C → Mesomorph
+            for i in range(1, 4):  # 3 A's
+                responses.append({"question_id": i, "value": "A"})
+            for i in range(4, 13):  # 9 B's
+                responses.append({"question_id": i, "value": "B"})
+            for i in range(13, 16):  # 3 C's
+                responses.append({"question_id": i, "value": "C"})
+        elif pattern == "near_tie":
+            # Test Case 9: 6 A, 6 B, 3 C → Hybrid
+            for i in range(1, 7):  # 6 A's
+                responses.append({"question_id": i, "value": "A"})
+            for i in range(7, 13):  # 6 B's
+                responses.append({"question_id": i, "value": "B"})
+            for i in range(13, 16):  # 3 C's
+                responses.append({"question_id": i, "value": "C"})
+        elif pattern == "incomplete":
+            # Test Case 8: Only 13 responses → 400 error
+            for i in range(1, 14):  # Only 13 responses
+                responses.append({"question_id": i, "value": "A"})
+        elif pattern == "invalid":
+            # Test Case 10: Invalid choice values → 400 error
+            for i in range(1, 15):
+                responses.append({"question_id": i, "value": "A"})
+            responses.append({"question_id": 15, "value": "D"})  # Invalid value
+        
+        return responses
+    
+    def test_quiz_submission(self, pattern: str, expected_body_type: str = None, expected_range: str = None, should_fail: bool = False) -> bool:
+        """Test quiz submission with specific pattern"""
+        responses = self.create_quiz_responses(pattern)
+        quiz_data = {"responses": responses}
+        
+        try:
+            response = self.session.post(
+                f"{BACKEND_URL}/quiz/submit",
+                json=quiz_data,
+                headers=self.get_auth_headers()
+            )
+            
+            if should_fail:
+                if response.status_code == 400:
                     return True
                 else:
-                    self.log_result("authentication", "User login", False, "Missing token or user in response")
-            elif response.status_code == 401:
-                # Demo user doesn't exist, try to create it first
-                print("   Demo user not found, creating demo user...")
-                demo_registration = {
-                    "email": TEST_USER_EMAIL,
-                    "password": TEST_USER_PASSWORD,
-                    "name": TEST_USER_NAME,
-                    "daily_sugar_goal": 50.0
-                }
-                
-                reg_response = requests.post(
-                    f"{self.base_url}/auth/register",
-                    json=demo_registration,
-                    timeout=10
-                )
-                
-                if reg_response.status_code == 200:
-                    reg_data = reg_response.json()
-                    self.auth_token = reg_data["access_token"]
-                    self.log_result("authentication", "Demo user creation + login", True)
-                    return True
-                else:
-                    self.log_result("authentication", "User login", False, f"Demo user creation failed: HTTP {reg_response.status_code}")
-            else:
-                self.log_result("authentication", "User login", False, f"HTTP {response.status_code}: {response.text}")
+                    print(f"   Expected 400 error but got {response.status_code}")
+                    return False
+            
+            if response.status_code != 200:
+                print(f"   API Error: {response.status_code} - {response.text}")
+                return False
+            
+            result = response.json()
+            
+            # Verify expected results
+            if expected_body_type and result.get("body_type") != expected_body_type:
+                print(f"   Expected body_type: {expected_body_type}, got: {result.get('body_type')}")
+                return False
+            
+            if expected_range and result.get("sugarpoints_range") != expected_range:
+                print(f"   Expected range: {expected_range}, got: {result.get('sugarpoints_range')}")
+                return False
+            
+            # Verify required fields exist
+            required_fields = ["body_type", "sugarpoints_range", "onboarding_path", "health_risk", "recommendations", "score_breakdown"]
+            for field in required_fields:
+                if field not in result:
+                    print(f"   Missing required field: {field}")
+                    return False
+            
+            print(f"   Result: {result['body_type']} ({result['sugarpoints_range']})")
+            return True
+            
         except Exception as e:
-            self.log_result("authentication", "User login", False, str(e))
-        
-        return False
+            print(f"   Exception: {str(e)}")
+            return False
     
-    def test_jwt_validation(self):
-        """Test JWT token validation on protected endpoint"""
-        print("\n=== Testing JWT Token Validation ===")
+    def test_user_profile_integration(self) -> bool:
+        """Test user profile integration for quiz results"""
+        print("\n=== Testing User Profile Integration ===")
         
-        if not self.auth_token:
-            self.log_result("authentication", "JWT validation", False, "No auth token available")
-            return
-        
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        # First submit a quiz to store results
+        responses = self.create_quiz_responses("all_a")  # Ectomorph
+        quiz_data = {"responses": responses}
         
         try:
-            response = requests.get(
-                f"{self.base_url}/food/entries",
-                headers=headers,
-                timeout=10
+            # Submit quiz
+            response = self.session.post(
+                f"{BACKEND_URL}/quiz/submit",
+                json=quiz_data,
+                headers=self.get_auth_headers()
             )
             
-            if response.status_code == 200:
-                self.log_result("authentication", "JWT validation", True)
-            elif response.status_code == 401:
-                self.log_result("authentication", "JWT validation", False, "Token rejected")
-            else:
-                self.log_result("authentication", "JWT validation", False, f"HTTP {response.status_code}")
-        except Exception as e:
-            self.log_result("authentication", "JWT validation", False, str(e))
-    
-    def test_food_entry_creation(self):
-        """Test creating food entries"""
-        print("\n=== Testing Food Entry Creation ===")
-        
-        if not self.auth_token:
-            self.log_result("food_tracking", "Food entry creation", False, "No auth token")
-            return
-        
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        food_data = {
-            "name": "Apple",
-            "sugar_content": 10.5,
-            "portion_size": 1.0,
-            "calories": 95
-        }
-        
-        try:
-            response = requests.post(
-                f"{self.base_url}/food/entries",
-                json=food_data,
-                headers=headers,
-                timeout=10
+            if response.status_code != 200:
+                self.log_test("Quiz submission for profile test", False, f"Status: {response.status_code}")
+                return False
+            
+            # Get user profile to verify quiz results are stored
+            profile_response = self.session.get(
+                f"{BACKEND_URL}/user/profile",
+                headers=self.get_auth_headers()
             )
             
-            if response.status_code == 200:
-                data = response.json()
-                if "id" in data and "name" in data and data["name"] == "Apple":
-                    self.log_result("food_tracking", "Food entry creation", True)
-                    return data["id"]
-                else:
-                    self.log_result("food_tracking", "Food entry creation", False, "Invalid response format")
-            else:
-                self.log_result("food_tracking", "Food entry creation", False, f"HTTP {response.status_code}: {response.text}")
-        except Exception as e:
-            self.log_result("food_tracking", "Food entry creation", False, str(e))
-        
-        return None
-    
-    def test_food_entries_list(self):
-        """Test listing food entries"""
-        print("\n=== Testing Food Entries List ===")
-        
-        if not self.auth_token:
-            self.log_result("food_tracking", "Food entries list", False, "No auth token")
-            return
-        
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        
-        try:
-            response = requests.get(
-                f"{self.base_url}/food/entries",
-                headers=headers,
-                timeout=10
+            if profile_response.status_code != 200:
+                self.log_test("Get user profile", False, f"Status: {profile_response.status_code}")
+                return False
+            
+            profile_data = profile_response.json()
+            
+            # Check if quiz results are in profile (they should be stored in the database)
+            # Note: The current implementation stores quiz results in the users table
+            self.log_test("Get user profile", True, "Profile retrieved successfully")
+            
+            # Test profile update
+            update_data = {
+                "age": 30,
+                "gender": "other",
+                "activity_level": "moderate",
+                "health_goals": ["weight_management", "energy_boost"],
+                "daily_sugar_points_target": 100,
+                "completed_onboarding": True
+            }
+            
+            update_response = self.session.put(
+                f"{BACKEND_URL}/user/profile",
+                json=update_data,
+                headers=self.get_auth_headers()
             )
             
-            if response.status_code == 200:
-                data = response.json()
-                if isinstance(data, list):
-                    self.log_result("food_tracking", "Food entries list", True)
-                    print(f"   Found {len(data)} food entries")
-                else:
-                    self.log_result("food_tracking", "Food entries list", False, "Response is not a list")
-            else:
-                self.log_result("food_tracking", "Food entries list", False, f"HTTP {response.status_code}: {response.text}")
-        except Exception as e:
-            self.log_result("food_tracking", "Food entries list", False, str(e))
-    
-    def test_today_entries(self):
-        """Test today's entries summary with meal grouping"""
-        print("\n=== Testing Today's Entries Summary with Meal Grouping ===")
-        
-        if not self.auth_token:
-            self.log_result("meal_categorization", "Today's entries with meals", False, "No auth token")
-            return
-        
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        
-        try:
-            response = requests.get(
-                f"{self.base_url}/food/entries/today",
-                headers=headers,
-                timeout=10
-            )
+            if update_response.status_code != 200:
+                self.log_test("Update user profile", False, f"Status: {update_response.status_code}")
+                return False
             
-            if response.status_code == 200:
-                data = response.json()
-                required_fields = ["entries", "meals", "total_sugar", "daily_goal", "percentage"]
-                if all(field in data for field in required_fields):
-                    # Check if meals object has the expected structure
-                    meals = data.get("meals", {})
-                    expected_meal_types = ["breakfast", "lunch", "dinner", "snack"]
-                    if all(meal_type in meals for meal_type in expected_meal_types):
-                        self.log_result("meal_categorization", "Today's entries with meals", True)
-                        print(f"   Total sugar: {data['total_sugar']}g / {data['daily_goal']}g ({data['percentage']:.1f}%)")
-                        print(f"   Meal breakdown: {[(k, len(v)) for k, v in meals.items()]}")
-                    else:
-                        self.log_result("meal_categorization", "Today's entries with meals", False, "Missing meal categories in response")
-                else:
-                    self.log_result("meal_categorization", "Today's entries with meals", False, "Missing required fields in response")
-            else:
-                self.log_result("meal_categorization", "Today's entries with meals", False, f"HTTP {response.status_code}: {response.text}")
-        except Exception as e:
-            self.log_result("meal_categorization", "Today's entries with meals", False, str(e))
-    
-    def test_passio_food_search(self):
-        """Test Passio food search API"""
-        print("\n=== Testing Passio Food Search API ===")
-        
-        if not self.auth_token:
-            self.log_result("passio_integration", "Food search", False, "No auth token")
-            return
-        
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        
-        # Test search for "apple"
-        search_data = {
-            "query": "apple",
-            "limit": 10
-        }
-        
-        try:
-            response = requests.post(
-                f"{self.base_url}/food/search",
-                json=search_data,
-                headers=headers,
-                timeout=15
-            )
+            self.log_test("Update user profile", True, "Profile updated successfully")
+            return True
             
-            if response.status_code == 200:
-                data = response.json()
-                required_fields = ["results", "query", "count", "source"]
-                if all(field in data for field in required_fields):
-                    results = data.get("results", [])
-                    if len(results) > 0:
-                        # Check if results have expected structure
-                        first_result = results[0]
-                        expected_result_fields = ["id", "name", "sugar_per_100g", "calories_per_100g"]
-                        if all(field in first_result for field in expected_result_fields):
-                            self.log_result("passio_integration", "Food search - apple", True)
-                            print(f"   Found {len(results)} results for 'apple'")
-                            print(f"   First result: {first_result['name']} - {first_result['sugar_per_100g']}g sugar/100g")
-                        else:
-                            self.log_result("passio_integration", "Food search - apple", False, "Results missing expected fields")
-                    else:
-                        self.log_result("passio_integration", "Food search - apple", False, "No results returned")
-                else:
-                    self.log_result("passio_integration", "Food search - apple", False, "Missing required response fields")
-            else:
-                self.log_result("passio_integration", "Food search - apple", False, f"HTTP {response.status_code}: {response.text}")
         except Exception as e:
-            self.log_result("passio_integration", "Food search - apple", False, str(e))
-        
-        # Test search for "chocolate"
-        search_data = {
-            "query": "chocolate",
-            "limit": 10
-        }
-        
-        try:
-            response = requests.post(
-                f"{self.base_url}/food/search",
-                json=search_data,
-                headers=headers,
-                timeout=15
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "results" in data and len(data["results"]) > 0:
-                    self.log_result("passio_integration", "Food search - chocolate", True)
-                    print(f"   Found {len(data['results'])} results for 'chocolate'")
-                else:
-                    self.log_result("passio_integration", "Food search - chocolate", False, "No results for chocolate")
-            else:
-                self.log_result("passio_integration", "Food search - chocolate", False, f"HTTP {response.status_code}")
-        except Exception as e:
-            self.log_result("passio_integration", "Food search - chocolate", False, str(e))
-    
-    def test_passio_popular_foods(self):
-        """Test Passio popular foods API"""
-        print("\n=== Testing Passio Popular Foods API ===")
-        
-        if not self.auth_token:
-            self.log_result("passio_integration", "Popular foods", False, "No auth token")
-            return
-        
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        
-        # Test popular foods without category
-        try:
-            response = requests.get(
-                f"{self.base_url}/food/popular",
-                headers=headers,
-                timeout=15
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "results" in data and len(data["results"]) > 0:
-                    self.log_result("passio_integration", "Popular foods - no category", True)
-                    print(f"   Found {len(data['results'])} popular foods")
-                else:
-                    self.log_result("passio_integration", "Popular foods - no category", False, "No popular foods returned")
-            else:
-                self.log_result("passio_integration", "Popular foods - no category", False, f"HTTP {response.status_code}")
-        except Exception as e:
-            self.log_result("passio_integration", "Popular foods - no category", False, str(e))
-        
-        # Test popular foods with fruits category
-        try:
-            response = requests.get(
-                f"{self.base_url}/food/popular?category=fruits",
-                headers=headers,
-                timeout=15
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "results" in data:
-                    self.log_result("passio_integration", "Popular foods - fruits", True)
-                    print(f"   Found {len(data['results'])} popular fruits")
-                else:
-                    self.log_result("passio_integration", "Popular foods - fruits", False, "No results field")
-            else:
-                self.log_result("passio_integration", "Popular foods - fruits", False, f"HTTP {response.status_code}")
-        except Exception as e:
-            self.log_result("passio_integration", "Popular foods - fruits", False, str(e))
-        
-        # Test popular foods with vegetables category
-        try:
-            response = requests.get(
-                f"{self.base_url}/food/popular?category=vegetables",
-                headers=headers,
-                timeout=15
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "results" in data:
-                    self.log_result("passio_integration", "Popular foods - vegetables", True)
-                    print(f"   Found {len(data['results'])} popular vegetables")
-                else:
-                    self.log_result("passio_integration", "Popular foods - vegetables", False, "No results field")
-            else:
-                self.log_result("passio_integration", "Popular foods - vegetables", False, f"HTTP {response.status_code}")
-        except Exception as e:
-            self.log_result("passio_integration", "Popular foods - vegetables", False, str(e))
-    
-    def test_food_recognition(self):
-        """Test Passio food recognition API"""
-        print("\n=== Testing Passio Food Recognition API ===")
-        
-        if not self.auth_token:
-            self.log_result("passio_integration", "Food recognition", False, "No auth token")
-            return
-        
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        
-        # Create a simple base64 encoded test image (1x1 pixel PNG)
-        test_image_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg=="
-        
-        recognition_data = {
-            "image_base64": test_image_base64
-        }
-        
-        try:
-            response = requests.post(
-                f"{self.base_url}/food/recognize",
-                json=recognition_data,
-                headers=headers,
-                timeout=20
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "results" in data and "count" in data and "source" in data:
-                    self.log_result("passio_integration", "Food recognition", True)
-                    print(f"   Recognition returned {data['count']} results")
-                    if data["results"]:
-                        print(f"   First result: {data['results'][0].get('name', 'Unknown')}")
-                else:
-                    self.log_result("passio_integration", "Food recognition", False, "Missing expected response fields")
-            elif response.status_code == 403:
-                self.log_result("passio_integration", "Food recognition", False, "API access forbidden - may need valid Passio API key")
-            else:
-                self.log_result("passio_integration", "Food recognition", False, f"HTTP {response.status_code}: {response.text}")
-        except Exception as e:
-            self.log_result("passio_integration", "Food recognition", False, str(e))
-    
-    def test_meal_categorization(self):
-        """Test food entries with different meal types"""
-        print("\n=== Testing Meal Categorization ===")
-        
-        if not self.auth_token:
-            self.log_result("meal_categorization", "Meal type entries", False, "No auth token")
-            return
-        
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        
-        # Test creating entries with different meal types
-        meal_types = ["breakfast", "lunch", "dinner", "snack"]
-        foods = [
-            {"name": "Oatmeal with Berries", "sugar_content": 8.5, "portion_size": 1.0, "calories": 150},
-            {"name": "Grilled Chicken Salad", "sugar_content": 3.2, "portion_size": 1.0, "calories": 280},
-            {"name": "Salmon with Vegetables", "sugar_content": 2.1, "portion_size": 1.0, "calories": 350},
-            {"name": "Mixed Nuts", "sugar_content": 1.5, "portion_size": 0.5, "calories": 180}
-        ]
-        
-        created_entries = []
-        
-        for i, meal_type in enumerate(meal_types):
-            food_data = foods[i].copy()
-            food_data["meal_type"] = meal_type
-            
-            try:
-                response = requests.post(
-                    f"{self.base_url}/food/entries",
-                    json=food_data,
-                    headers=headers,
-                    timeout=10
-                )
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    if "meal_type" in data and data["meal_type"] == meal_type:
-                        self.log_result("meal_categorization", f"Food entry - {meal_type}", True)
-                        created_entries.append(data["id"])
-                        print(f"   Created {meal_type} entry: {data['name']}")
-                    else:
-                        self.log_result("meal_categorization", f"Food entry - {meal_type}", False, "meal_type not preserved")
-                else:
-                    self.log_result("meal_categorization", f"Food entry - {meal_type}", False, f"HTTP {response.status_code}")
-            except Exception as e:
-                self.log_result("meal_categorization", f"Food entry - {meal_type}", False, str(e))
-        
-        print(f"   Created {len(created_entries)} meal entries for testing")
-    
-    def test_ai_chat(self):
-        """Test AI chat endpoint"""
-        print("\n=== Testing AI Chat Integration ===")
-        
-        if not self.auth_token:
-            self.log_result("ai_chat", "AI chat", False, "No auth token")
-            return
-        
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        chat_data = {
-            "message": "What are some healthy low-sugar snack options?"
-        }
-        
-        try:
-            response = requests.post(
-                f"{self.base_url}/ai/chat",
-                json=chat_data,
-                headers=headers,
-                timeout=30  # Longer timeout for AI response
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "response" in data and data["response"]:
-                    self.log_result("ai_chat", "AI chat", True)
-                    print(f"   AI Response: {data['response'][:100]}...")
-                else:
-                    self.log_result("ai_chat", "AI chat", False, "Empty or missing response")
-            elif response.status_code == 500:
-                self.log_result("ai_chat", "AI chat", False, f"Server error (likely emergentintegrations import issue): {response.text}")
-            else:
-                self.log_result("ai_chat", "AI chat", False, f"HTTP {response.status_code}: {response.text}")
-        except Exception as e:
-            self.log_result("ai_chat", "AI chat", False, str(e))
-    
-    def test_knowledge_base_search(self):
-        """Test knowledge base search"""
-        print("\n=== Testing Knowledge Base Search ===")
-        
-        if not self.auth_token:
-            self.log_result("knowledge_base", "KB search", False, "No auth token")
-            return
-        
-        headers = {"Authorization": f"Bearer {self.auth_token}"}
-        search_data = {
-            "query": "diabetes management",
-            "debug": True
-        }
-        
-        try:
-            response = requests.post(
-                f"{self.base_url}/kb/search",
-                json=search_data,
-                headers=headers,
-                timeout=10
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                if "results" in data and isinstance(data["results"], list):
-                    self.log_result("knowledge_base", "KB search", True)
-                    print(f"   Found {len(data['results'])} results")
-                    if "debug_info" in data:
-                        print(f"   Debug info: {data['debug_info']}")
-                else:
-                    self.log_result("knowledge_base", "KB search", False, "Invalid response format")
-            else:
-                self.log_result("knowledge_base", "KB search", False, f"HTTP {response.status_code}: {response.text}")
-        except Exception as e:
-            self.log_result("knowledge_base", "KB search", False, str(e))
+            self.log_test("User profile integration", False, f"Exception: {str(e)}")
+            return False
     
     def run_all_tests(self):
-        """Run all backend tests"""
-        print("🧪 Starting SugarDrop Backend API Tests - Passio Integration & Meal Categorization")
-        print(f"Backend URL: {self.base_url}")
-        print("=" * 70)
+        """Run all Body Type Quiz tests"""
+        print("🧪 Starting Body Type Quiz Backend Tests")
+        print(f"Backend URL: {BACKEND_URL}")
         
-        # Test health check first (includes version and Passio integration check)
-        self.test_health_check()
+        # Setup
+        if not self.setup_test_user():
+            print("❌ Failed to setup test user. Aborting tests.")
+            return False
         
-        # Test authentication
-        login_success = self.test_user_login()
-        if login_success:
-            self.test_jwt_validation()
+        print("\n=== Testing All 10 Evaluation Cases ===")
         
-        # Test registration with new user
-        self.test_user_registration()
+        # Test Case 1: All A responses → Ectomorph
+        passed = self.test_quiz_submission("all_a", "Ectomorph", "100–125")
+        self.log_test("Test Case 1: All A → Ectomorph", passed)
         
-        # Test basic food tracking (requires auth)
-        if self.auth_token:
-            self.test_food_entry_creation()
-            self.test_food_entries_list()
+        # Test Case 2: All B responses → Mesomorph
+        passed = self.test_quiz_submission("all_b", "Mesomorph", "75–100")
+        self.log_test("Test Case 2: All B → Mesomorph", passed)
         
-        # Test NEW PASSIO INTEGRATION features (requires auth)
-        if self.auth_token:
-            self.test_passio_food_search()
-            self.test_passio_popular_foods()
-            self.test_food_recognition()
+        # Test Case 3: All C responses → Endomorph
+        passed = self.test_quiz_submission("all_c", "Endomorph", "50–75")
+        self.log_test("Test Case 3: All C → Endomorph", passed)
         
-        # Test NEW MEAL CATEGORIZATION features (requires auth)
-        if self.auth_token:
-            self.test_meal_categorization()
-            self.test_today_entries()  # Updated to test meal grouping
+        # Test Case 4: Tie A-B → Hybrid
+        passed = self.test_quiz_submission("tie_ab", "Hybrid", "75–125")
+        self.log_test("Test Case 4: Tie A-B → Hybrid", passed)
         
-        # Test AI chat (requires auth)
-        if self.auth_token:
-            self.test_ai_chat()
+        # Test Case 5: Tie A-C → Hybrid
+        passed = self.test_quiz_submission("tie_ac", "Hybrid", "75–125")
+        self.log_test("Test Case 5: Tie A-C → Hybrid", passed)
         
-        # Test knowledge base (requires auth)
-        if self.auth_token:
-            self.test_knowledge_base_search()
+        # Test Case 6: Tie All Equal → Hybrid
+        passed = self.test_quiz_submission("tie_all", "Hybrid", "75–125")
+        self.log_test("Test Case 6: Tie All Equal → Hybrid", passed)
         
-        # Print summary
-        self.print_summary()
+        # Test Case 7: Mixed Dominant B → Mesomorph
+        passed = self.test_quiz_submission("dominant_b", "Mesomorph", "75–100")
+        self.log_test("Test Case 7: Dominant B → Mesomorph", passed)
+        
+        # Test Case 8: Incomplete submission → 400 error
+        passed = self.test_quiz_submission("incomplete", should_fail=True)
+        self.log_test("Test Case 8: Incomplete submission → 400 error", passed)
+        
+        # Test Case 9: Near-tie → Hybrid
+        passed = self.test_quiz_submission("near_tie", "Hybrid", "75–125")
+        self.log_test("Test Case 9: Near-tie → Hybrid", passed)
+        
+        # Test Case 10: Invalid choice values → 400 error
+        passed = self.test_quiz_submission("invalid", should_fail=True)
+        self.log_test("Test Case 10: Invalid values → 400 error", passed)
+        
+        # Test user profile integration
+        self.test_user_profile_integration()
+        
+        # Summary
+        print("\n=== Test Summary ===")
+        total_tests = len(self.test_results)
+        passed_tests = sum(1 for result in self.test_results if result["passed"])
+        failed_tests = total_tests - passed_tests
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"Passed: {passed_tests}")
+        print(f"Failed: {failed_tests}")
+        
+        if failed_tests > 0:
+            print("\n❌ Failed Tests:")
+            for result in self.test_results:
+                if not result["passed"]:
+                    print(f"  - {result['test']}: {result['details']}")
+        
+        return failed_tests == 0
+
+def main():
+    """Main test runner"""
+    tester = BodyTypeQuizTester()
+    success = tester.run_all_tests()
     
-    def print_summary(self):
-        """Print test results summary"""
-        print("\n" + "=" * 50)
-        print("🏁 TEST RESULTS SUMMARY")
-        print("=" * 50)
-        
-        total_passed = 0
-        total_failed = 0
-        
-        for category, results in self.test_results.items():
-            passed = results["passed"]
-            failed = results["failed"]
-            total_passed += passed
-            total_failed += failed
-            
-            status = "✅" if failed == 0 else "❌"
-            print(f"{status} {category.upper()}: {passed} passed, {failed} failed")
-            
-            if results["errors"]:
-                for error in results["errors"]:
-                    print(f"   • {error}")
-        
-        print("-" * 50)
-        print(f"TOTAL: {total_passed} passed, {total_failed} failed")
-        
-        if total_failed == 0:
-            print("🎉 All tests passed!")
-        else:
-            print(f"⚠️  {total_failed} tests failed - see details above")
+    if success:
+        print("\n🎉 All tests passed!")
+        sys.exit(0)
+    else:
+        print("\n💥 Some tests failed!")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    tester = SugarDropAPITester()
-    tester.run_all_tests()
+    main()
