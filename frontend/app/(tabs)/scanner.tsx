@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { apiClient } from '../../src/services/api';
 import AuthGuard from '../../src/components/AuthGuard';
 import LoadingSpinner from '../../src/components/LoadingSpinner';
 
