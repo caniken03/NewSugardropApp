@@ -93,13 +93,13 @@ export default function LoginScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <View style={[styles.logoContainer, { backgroundColor: colors.primary }]}>
+          <View style={toStyle([styles.logoContainer, { backgroundColor: colors.primary }])}>
             <Ionicons name="water" size={32} color="#ffffff" />
           </View>
-          <Text style={[styles.title, { color: colors.text }]}>
+          <Text style={toStyle([styles.title, { color: colors.text }])}>
             Welcome Back
           </Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          <Text style={toStyle([styles.subtitle, { color: colors.textSecondary }])}>
             Sign in to continue tracking your sugar intake
           </Text>
         </View>
