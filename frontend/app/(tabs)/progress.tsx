@@ -415,8 +415,10 @@ const styles = StyleSheet.create({
   entriesCard: {
     borderRadius: 16,
     padding: 20,
-    ...webSafeShadow.medium,
-  },
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   entryItem: {
