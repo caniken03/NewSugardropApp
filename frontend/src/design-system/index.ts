@@ -3,9 +3,14 @@
  * Clinical/Minimalist Design System with WCAG 2.1 AA Compliance
  */
 
-export { colors, darkColors } from './colors';
-export { typography, textStyles, fontFamilies, fontWeights } from './typography';
-export { spacing, layout, touchTargets, borderRadius, elevation, iconSizes, components } from './spacing';
+import { colors, darkColors } from './colors';
+import { typography, textStyles, fontFamilies, fontWeights } from './typography';
+import { spacing, layout, touchTargets, borderRadius, elevation, iconSizes, components } from './spacing';
+
+// Named exports
+export { colors, darkColors };
+export { typography, textStyles, fontFamilies, fontWeights };
+export { spacing, layout, touchTargets, borderRadius, elevation, iconSizes, components };
 
 // Re-export everything as a unified theme object
 export const theme = {
