@@ -16,6 +16,10 @@ import jwt
 from passlib.context import CryptContext
 from supabase import create_client, Client
 import openai
+import base64
+
+# Import Passio service
+from passio_service import passio_service
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
@@ -25,6 +29,7 @@ load_dotenv(ROOT_DIR / '.env')
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+PASSIO_API_KEY = os.getenv('PASSIO_API_KEY')
 JWT_SECRET = os.getenv('JWT_SECRET', 'sugardrop-secret-key-change-in-production')
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
@@ -42,7 +47,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 # FastAPI app setup
-app = FastAPI(title="SugarDrop API with Supabase", version="2.0.0")
+app = FastAPI(title="SugarDrop API with Passio + Supabase", version="2.1.0")
 api_router = APIRouter(prefix="/api")
 
 # Models
@@ -75,6 +80,7 @@ class FoodEntry(BaseModel):
     sugar_content: float
     portion_size: float
     calories: Optional[float] = None
+    meal_type: Optional[str] = "snack"  # breakfast, lunch, dinner, snack
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 class FoodEntryCreate(BaseModel):
@@ -82,6 +88,7 @@ class FoodEntryCreate(BaseModel):
     sugar_content: float
     portion_size: float
     calories: Optional[float] = None
+    meal_type: Optional[str] = "snack"
 
 class ChatMessage(BaseModel):
     message: str
@@ -91,62 +98,15 @@ class KBQuery(BaseModel):
     query: str
     debug: Optional[bool] = False
 
-# Database setup function
-async def setup_database():
-    """Create database tables if they don't exist"""
-    try:
-        # Create users table directly using SQL
-        supabase.rpc('sql', {
-            'query': """
-            CREATE TABLE IF NOT EXISTS users (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                email VARCHAR UNIQUE NOT NULL,
-                name VARCHAR NOT NULL,
-                password VARCHAR NOT NULL,
-                daily_sugar_goal REAL DEFAULT 50.0,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            );
-            """
-        }).execute()
-        
-        # Create food_entries table
-        supabase.rpc('sql', {
-            'query': """
-            CREATE TABLE IF NOT EXISTS food_entries (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-                name VARCHAR NOT NULL,
-                sugar_content REAL NOT NULL,
-                portion_size REAL NOT NULL,
-                calories REAL,
-                timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            );
-            """
-        }).execute()
-        
-        # Create chat_history table
-        supabase.rpc('sql', {
-            'query': """
-            CREATE TABLE IF NOT EXISTS chat_history (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-                message TEXT NOT NULL,
-                response TEXT NOT NULL,
-                timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            );
-            """
-        }).execute()
-        
-        logger.info("Database tables created successfully")
-    except Exception as e:
-        # Tables likely already exist or we don't have RPC access
-        # Try to test with a simple select instead
-        try:
-            supabase.table('users').select('id').limit(1).execute()
-            logger.info("Database tables already exist")
-        except Exception as setup_error:
-            logger.warning(f"Database setup warning: {setup_error}")
-            logger.info("Continuing without database setup - tables may need to be created manually")
+class FoodSearchQuery(BaseModel):
+    query: str
+    limit: Optional[int] = 20
+
+class ImageRecognitionRequest(BaseModel):
+    image_base64: str
+
+class BarcodeRequest(BaseModel):
+    barcode: str
 
 # Utility functions
 def hash_password(password: str) -> str:
@@ -244,7 +204,7 @@ async def login(user_data: UserLogin):
     
     return Token(access_token=access_token, token_type="bearer", user=user)
 
-# Food tracking routes
+# Food tracking routes with meal categorization
 @api_router.post("/food/entries", response_model=FoodEntry)
 async def create_food_entry(entry_data: FoodEntryCreate, current_user: User = Depends(get_current_user)):
     entry = FoodEntry(
@@ -252,7 +212,8 @@ async def create_food_entry(entry_data: FoodEntryCreate, current_user: User = De
         name=entry_data.name,
         sugar_content=entry_data.sugar_content,
         portion_size=entry_data.portion_size,
-        calories=entry_data.calories
+        calories=entry_data.calories,
+        meal_type=entry_data.meal_type or "snack"
     )
     
     # Convert to dict with proper datetime serialization
@@ -281,12 +242,108 @@ async def get_today_entries(current_user: User = Depends(get_current_user)):
     entries = [FoodEntry(**entry) for entry in result.data]
     total_sugar = sum(entry.sugar_content * entry.portion_size for entry in entries)
     
+    # Group by meal type
+    meals = {"breakfast": [], "lunch": [], "dinner": [], "snack": []}
+    for entry in entries:
+        meal_type = entry.meal_type or "snack"
+        if meal_type in meals:
+            meals[meal_type].append(entry)
+    
     return {
         "entries": entries,
+        "meals": meals,
         "total_sugar": total_sugar,
         "daily_goal": current_user.daily_sugar_goal,
         "percentage": (total_sugar / current_user.daily_sugar_goal) * 100 if current_user.daily_sugar_goal > 0 else 0
     }
+
+# NEW PASSIO FOOD DATABASE ROUTES
+@api_router.post("/food/search")
+async def search_food(search_query: FoodSearchQuery, current_user: User = Depends(get_current_user)):
+    """
+    Search for food items using Passio Nutrition AI
+    """
+    try:
+        results = await passio_service.search_food(search_query.query, search_query.limit)
+        return {
+            "results": results,
+            "query": search_query.query,
+            "count": len(results),
+            "source": "passio_ai"
+        }
+    except Exception as e:
+        logger.error(f"Food search error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Food search service unavailable")
+
+@api_router.get("/food/popular")
+async def get_popular_foods(category: Optional[str] = None, limit: int = 20, current_user: User = Depends(get_current_user)):
+    """
+    Get popular/trending foods
+    """
+    try:
+        results = await passio_service.get_popular_foods(category, limit)
+        return {
+            "results": results,
+            "category": category,
+            "count": len(results),
+            "source": "passio_ai"
+        }
+    except Exception as e:
+        logger.error(f"Popular foods error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Popular foods service unavailable")
+
+@api_router.get("/food/details/{food_id}")
+async def get_food_details(food_id: str, current_user: User = Depends(get_current_user)):
+    """
+    Get detailed nutrition information for a specific food
+    """
+    try:
+        details = await passio_service.get_food_details(food_id)
+        if not details:
+            raise HTTPException(status_code=404, detail="Food not found")
+        return details
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Food details error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Food details service unavailable")
+
+@api_router.post("/food/recognize")
+async def recognize_food_from_image(image_request: ImageRecognitionRequest, current_user: User = Depends(get_current_user)):
+    """
+    Recognize food from image using Passio AI
+    """
+    try:
+        # Decode base64 image
+        image_data = base64.b64decode(image_request.image_base64)
+        
+        # Get recognition results
+        results = await passio_service.recognize_food_from_image(image_data)
+        
+        return {
+            "results": results,
+            "count": len(results),
+            "source": "passio_ai_vision"
+        }
+    except Exception as e:
+        logger.error(f"Food recognition error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Food recognition service unavailable")
+
+@api_router.post("/food/barcode")
+async def get_barcode_nutrition(barcode_request: BarcodeRequest, current_user: User = Depends(get_current_user)):
+    """
+    Get nutrition information from barcode
+    """
+    try:
+        nutrition_info = await passio_service.get_barcode_nutrition(barcode_request.barcode)
+        if not nutrition_info:
+            raise HTTPException(status_code=404, detail="Product not found")
+        return nutrition_info
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Barcode lookup error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Barcode lookup service unavailable")
 
 # AI Chat routes using OpenAI directly
 @api_router.post("/ai/chat")
@@ -384,7 +441,7 @@ async def health_check():
     return {
         "status": "healthy" if supabase_status else "degraded",
         "timestamp": datetime.utcnow(),
-        "version": "2.0.0",
+        "version": "2.1.0",
         "database": "supabase",
         "features": {
             "auth": True,
@@ -392,15 +449,13 @@ async def health_check():
             "ai_chat": bool(OPENAI_API_KEY),
             "kb_search": True,
             "real_time": True,
-            "supabase_connection": supabase_status
+            "supabase_connection": supabase_status,
+            "passio_integration": bool(PASSIO_API_KEY),
+            "food_search": True,
+            "food_recognition": True,
+            "barcode_scanning": True
         }
     }
-
-# Startup event
-@app.on_event("startup")
-async def startup_event():
-    # Skip automatic database setup - tables should be created manually in Supabase
-    logger.info("SugarDrop API with Supabase started successfully")
 
 # Include router
 app.include_router(api_router)
