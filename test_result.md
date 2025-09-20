@@ -243,23 +243,19 @@ frontend:
   
 metadata:
   created_by: "main_agent"
-  version: "3.0"
+  version: "3.1"
   test_sequence: 3
-  run_ui: false
+  run_ui: true
 
 test_plan:
   current_focus:
-    - "SugarPoints Calculation Logic Implementation"
-    - "Backend Models Update for SugarPoints"
-    - "Food Entry Creation API Update"
-    - "Today Entries API Update for SugarPoints"
-    - "Passio Service Update for Nutrition Extraction"
+    - "Home Screen SugarPoints Display"
+    - "Add Entry Modal SugarPoints Integration"
+    - "Dark Theme Design System Implementation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Implemented Phase A of SugarPoints system: 1) Added calculate_sugar_points() function with proper rounding rules and Nil SugarPoints handling. 2) Updated backend models to support carbs/fat/protein fields. 3) Modified food entry creation and today entries APIs to use SugarPoints. 4) Enhanced Passio service to extract carbs, fat, protein instead of just sugar. Need comprehensive backend testing to verify SugarPoints calculation logic and API responses match the 8 test cases from specification."
-  - agent: "testing"
-    message: "COMPLETED: Comprehensive SugarPoints backend testing with 100% success rate (18/18 tests passed). All 8 specification test cases verified: Zero-carb foods display 'Nil SugarPoints', exact calculations work for all carb amounts, portion size scaling accurate, blocks calculation uses proper rounding. Fixed database schema fallback issue for missing columns. Passio API fallback working despite 401 errors. All core SugarPoints functionality operational and ready for frontend integration."
+    message: "Completed Phase B implementation: 1) Updated HomeScreen to display SugarPoints with progress circle and enhanced nutrition info in food entries. 2) Transformed AddEntryModal from sugar-focused to comprehensive nutrition form with carbs/fat/protein tracking and SugarPoints calculation. 3) Applied consistent dark theme design system across components. All changes maintain backward compatibility and follow the provided UI design system. Backend Phase A remains fully functional with 100% test success rate."
