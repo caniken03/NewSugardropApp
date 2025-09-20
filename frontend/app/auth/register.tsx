@@ -79,26 +79,49 @@ export default function RegisterScreen() {
     return <LoadingSpinner />;
   }
 
+  const containerStyle = toStyle([
+    styles.container,
+    { backgroundColor: colors.background }
+  ]);
+
+  const scrollContentStyle = toStyle([
+    styles.scrollContent,
+    { paddingTop: insets.top + 40 }
+  ]);
+
+  const inputStyle = {
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    color: colors.text,
+  };
+
+  const buttonStyle = toStyle([
+    styles.registerButton,
+    { backgroundColor: colors.primary }
+  ]);
+
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={containerStyle}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + 40 },
-        ]}
+        contentContainerStyle={scrollContentStyle}
         showsVerticalScrollIndicator={false}>
         
         {/* Header */}
         <View style={styles.header}>
-          <View style={[styles.logoContainer, { backgroundColor: colors.primary }]}>
+          <View style={toStyle([styles.logoContainer, { backgroundColor: colors.primary }])}>
             <Ionicons name="water" size={32} color="#ffffff" />
           </View>
-          <Text style={[styles.title, { color: colors.text }]}>
+          <Text style={toStyle([styles.title, { color: colors.text }])}>
             Create Account
           </Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          <Text style={toStyle([styles.subtitle, { color: colors.textSecondary }])}>
             Start your journey to better sugar management
           </Text>
         </View>
@@ -106,16 +129,9 @@ export default function RegisterScreen() {
         {/* Form */}
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Full Name</Text>
+            <Text style={toStyle([styles.label, { color: colors.text }])}>Full Name</Text>
             <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  color: colors.text,
-                },
-              ]}
+              style={inputStyle}
               value={formData.name}
               onChangeText={(value) => updateFormData('name', value)}
               placeholder="Enter your full name"
@@ -126,16 +142,9 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Email</Text>
+            <Text style={toStyle([styles.label, { color: colors.text }])}>Email</Text>
             <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  color: colors.text,
-                },
-              ]}
+              style={inputStyle}
               value={formData.email}
               onChangeText={(value) => updateFormData('email', value)}
               placeholder="Enter your email"
@@ -147,18 +156,10 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Password</Text>
+            <Text style={toStyle([styles.label, { color: colors.text }])}>Password</Text>
             <View style={styles.passwordContainer}>
               <TextInput
-                style={[
-                  styles.input,
-                  styles.passwordInput,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
-                    color: colors.text,
-                  },
-                ]}
+                style={toStyle([inputStyle, { paddingRight: 50 }])}
                 value={formData.password}
                 onChangeText={(value) => updateFormData('password', value)}
                 placeholder="Create a password"
@@ -180,16 +181,9 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Confirm Password</Text>
+            <Text style={toStyle([styles.label, { color: colors.text }])}>Confirm Password</Text>
             <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  color: colors.text,
-                },
-              ]}
+              style={inputStyle}
               value={formData.confirmPassword}
               onChangeText={(value) => updateFormData('confirmPassword', value)}
               placeholder="Confirm your password"
@@ -201,45 +195,38 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>
+            <Text style={toStyle([styles.label, { color: colors.text }])}>
               Daily Sugar Goal (grams)
             </Text>
             <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  color: colors.text,
-                },
-              ]}
+              style={inputStyle}
               value={formData.dailyGoal}
               onChangeText={(value) => updateFormData('dailyGoal', value)}
               placeholder="50"
               placeholderTextColor={colors.textSecondary}
               keyboardType="numeric"
             />
-            <Text style={[styles.helperText, { color: colors.textSecondary }]}>
+            <Text style={toStyle([styles.helperText, { color: colors.textSecondary }])}>
               Recommended: 25-50g per day
             </Text>
           </View>
 
           <TouchableOpacity
-            style={[styles.registerButton, { backgroundColor: colors.primary }]}
+            style={buttonStyle}
             onPress={handleRegister}
             disabled={loading}>
             <Text style={styles.registerButtonText}>Create Account</Text>
           </TouchableOpacity>
 
           <View style={styles.divider}>
-            <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-            <Text style={[styles.dividerText, { color: colors.textSecondary }]}>or</Text>
-            <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+            <View style={toStyle([styles.dividerLine, { backgroundColor: colors.border }])} />
+            <Text style={toStyle([styles.dividerText, { color: colors.textSecondary }])}>or</Text>
+            <View style={toStyle([styles.dividerLine, { backgroundColor: colors.border }])} />
           </View>
 
           <Link href="/auth/login" asChild>
-            <TouchableOpacity style={[styles.loginButton, { borderColor: colors.border }]}>
-              <Text style={[styles.loginButtonText, { color: colors.text }]}>
+            <TouchableOpacity style={toStyle([styles.loginButton, { borderColor: colors.border }])}>
+              <Text style={toStyle([styles.loginButtonText, { color: colors.text }])}>
                 Already have an account? Sign In
               </Text>
             </TouchableOpacity>
@@ -291,18 +278,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 8,
   },
-  input: {
-    height: 52,
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    fontSize: 16,
-  },
   passwordContainer: {
     position: 'relative',
-  },
-  passwordInput: {
-    paddingRight: 50,
   },
   eyeButton: {
     position: 'absolute',
