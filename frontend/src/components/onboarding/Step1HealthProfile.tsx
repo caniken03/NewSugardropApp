@@ -407,7 +407,13 @@ const styles = StyleSheet.create({
 
   selectedGender: {
     borderColor: colors.primary[400],
-    backgroundColor: colors.primary[50],
+    backgroundColor: colors.primary[100],
+    borderWidth: 2,
+    shadowColor: colors.primary[400],
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
 
   genderText: {
@@ -417,38 +423,45 @@ const styles = StyleSheet.create({
 
   selectedGenderText: {
     color: colors.primary[400],
-    fontWeight: '600',
+    fontWeight: '700',
   },
 
-  // Activity Level
+  // Activity Cards
   activityGrid: {
-    gap: spacing.md,
+    gap: spacing.lg,
   },
 
   activityCard: {
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     borderWidth: 1,
     borderColor: colors.border.light,
-    padding: spacing.lg,
+    padding: spacing.xl,
     alignItems: 'center',
+    position: 'relative',
   },
 
   selectedActivity: {
     borderColor: colors.primary[400],
-    backgroundColor: colors.primary[50],
+    backgroundColor: colors.primary[100],
+    borderWidth: 2,
+    shadowColor: colors.primary[400],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 
   activityLabel: {
     ...typography.titleMedium,
     color: colors.text.primary,
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
     marginBottom: spacing.xs,
   },
 
   selectedActivityLabel: {
     color: colors.primary[400],
-    fontWeight: '600',
+    fontWeight: '700',
   },
 
   activityDescription: {
@@ -457,7 +470,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Health Goals
+  checkmark: {
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+  },
+
+  // Goal Cards
   goalsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -468,17 +487,24 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: '47%',
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     borderWidth: 1,
     borderColor: colors.border.light,
     padding: spacing.lg,
     alignItems: 'center',
     position: 'relative',
+    minHeight: 100,
   },
 
   selectedGoal: {
     borderColor: colors.primary[400],
-    backgroundColor: colors.primary[50],
+    backgroundColor: colors.primary[100],
+    borderWidth: 2,
+    shadowColor: colors.primary[400],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 
   goalLabel: {
@@ -490,13 +516,64 @@ const styles = StyleSheet.create({
 
   selectedGoalLabel: {
     color: colors.primary[400],
-    fontWeight: '600',
+    fontWeight: '700',
   },
 
   checkIcon: {
     position: 'absolute',
     top: spacing.sm,
     right: spacing.sm,
+  },
+
+  // Progress
+  progressContainer: {
+    marginBottom: spacing.xl,
+  },
+
+  progressText: {
+    ...typography.labelMedium,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  progressBar: {
+    height: 6,
+    backgroundColor: colors.neutral[200],
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.primary[400],
+    borderRadius: 3,
+  },
+
+  // Question Section
+  questionSection: {
+    marginBottom: spacing.xxl,
+  },
+
+  questionTitle: {
+    ...typography.headlineMedium,
+    color: colors.text.primary,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+
+  questionSubtitle: {
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: spacing.xl,
+  },
+
+  questionContainer: {
+    marginTop: spacing.lg,
   },
 
   // Actions
@@ -506,11 +583,11 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl,
   },
 
-  skipButton: {
+  backButton: {
     flex: 1,
   },
 
-  continueButton: {
+  nextButton: {
     flex: 2,
   },
 });
