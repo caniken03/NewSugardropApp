@@ -363,22 +363,48 @@ async def get_today_entries(current_user: User = Depends(get_current_user)):
     result = supabase.table('food_entries').select('*').eq('user_id', current_user.id).gte('timestamp', today.isoformat()).lt('timestamp', tomorrow.isoformat()).execute()
     
     entries = []
+    total_sugar_points = 0
+    total_sugar_point_blocks = 0
+    
     for entry_data in result.data:
-        # Handle entries that might not have meal_type column
-        meal_type = entry_data.get('meal_type', 'snack')
+        # Handle entries that might not have new SugarPoints columns yet
+        carbs_per_100g = entry_data.get('carbs_per_100g', 0.0)
+        fat_per_100g = entry_data.get('fat_per_100g', 0.0)
+        protein_per_100g = entry_data.get('protein_per_100g', 0.0)
+        
+        # Calculate SugarPoints if not already stored
+        stored_sugar_points = entry_data.get('sugar_points')
+        if stored_sugar_points is not None:
+            sugar_points = stored_sugar_points
+            sugar_point_blocks = entry_data.get('sugar_point_blocks', 0)
+        else:
+            # Fallback: calculate from legacy sugar_content or carbs
+            if carbs_per_100g == 0.0 and entry_data.get('sugar_content', 0) > 0:
+                # Legacy mode: assume sugar_content was per gram, convert to carbs per 100g
+                carbs_per_100g = entry_data['sugar_content'] * 100
+            
+            sugar_points_data = calculate_sugar_points(carbs_per_100g, entry_data['portion_size'])
+            sugar_points = sugar_points_data["sugar_points"]
+            sugar_point_blocks = sugar_points_data["sugar_point_blocks"]
+        
         entry = FoodEntry(
             id=entry_data['id'],
             user_id=entry_data['user_id'],
             name=entry_data['name'],
-            sugar_content=entry_data['sugar_content'],
+            sugar_content=entry_data.get('sugar_content', 0.0),
             portion_size=entry_data['portion_size'],
             calories=entry_data.get('calories'),
-            meal_type=meal_type,
+            carbs_per_100g=carbs_per_100g,
+            fat_per_100g=fat_per_100g,
+            protein_per_100g=protein_per_100g,
+            sugar_points=sugar_points,
+            sugar_point_blocks=sugar_point_blocks,
+            meal_type=entry_data.get('meal_type', 'snack'),
             timestamp=datetime.fromisoformat(entry_data['timestamp'].replace('Z', '+00:00'))
         )
         entries.append(entry)
-    
-    total_sugar = sum(entry.sugar_content * entry.portion_size for entry in entries)
+        total_sugar_points += sugar_points
+        total_sugar_point_blocks += sugar_point_blocks
     
     # Group by meal type
     meals = {"breakfast": [], "lunch": [], "dinner": [], "snack": []}
@@ -390,12 +416,21 @@ async def get_today_entries(current_user: User = Depends(get_current_user)):
             # If unknown meal type, put in snack
             meals["snack"].append(entry)
     
+    # Calculate total SugarPoint Blocks (rounded)
+    total_sugar_point_blocks_rounded = round(total_sugar_points / 6) if total_sugar_points > 0 else 0
+    
     return {
         "entries": entries,
         "meals": meals,
-        "total_sugar": total_sugar,
-        "daily_goal": current_user.daily_sugar_goal,
-        "percentage": (total_sugar / current_user.daily_sugar_goal) * 100 if current_user.daily_sugar_goal > 0 else 0
+        # New SugarPoints system
+        "total_sugar_points": total_sugar_points,
+        "total_sugar_point_blocks": total_sugar_point_blocks_rounded,
+        "sugar_points_text": f"{total_sugar_points} SugarPoints" if total_sugar_points > 0 else "Nil SugarPoints",
+        "sugar_point_blocks_text": f"{total_sugar_point_blocks_rounded} Blocks",
+        # Legacy fields for backward compatibility
+        "total_sugar": sum(entry.sugar_content * entry.portion_size for entry in entries),  # Deprecated
+        "daily_goal": current_user.daily_sugar_goal,  # Deprecated - will be removed
+        "percentage": 0  # Deprecated - SugarPoints don't use percentage goals
     }
 
 # NEW PASSIO FOOD DATABASE ROUTES
