@@ -77,17 +77,28 @@ class FoodEntry(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
     name: str
-    sugar_content: float
+    # Legacy fields for backward compatibility
+    sugar_content: float = 0.0  # Deprecated - use carbs_per_100g instead
     portion_size: float
-    calories: Optional[float] = None
+    calories: Optional[float] = None  # Deprecated - will be removed
+    # New SugarPoints system fields
+    carbs_per_100g: float = 0.0  # Total carbohydrates per 100g
+    fat_per_100g: float = 0.0
+    protein_per_100g: float = 0.0
+    sugar_points: int = 0
+    sugar_point_blocks: int = 0
     meal_type: Optional[str] = "snack"  # breakfast, lunch, dinner, snack
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 class FoodEntryCreate(BaseModel):
     name: str
-    sugar_content: float
+    # Accept both old and new formats for backward compatibility
+    sugar_content: Optional[float] = None  # Deprecated
+    carbs_per_100g: Optional[float] = None  # New preferred field
+    fat_per_100g: Optional[float] = 0.0
+    protein_per_100g: Optional[float] = 0.0
     portion_size: float
-    calories: Optional[float] = None
+    calories: Optional[float] = None  # Deprecated - will be removed
     meal_type: Optional[str] = "snack"
 
 class ChatMessage(BaseModel):
