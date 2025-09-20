@@ -286,15 +286,33 @@ async def login(user_data: UserLogin):
     
     return Token(access_token=access_token, token_type="bearer", user=user)
 
-# Food tracking routes with meal categorization
+# Food tracking routes with SugarPoints system
 @api_router.post("/food/entries", response_model=FoodEntry)
 async def create_food_entry(entry_data: FoodEntryCreate, current_user: User = Depends(get_current_user)):
+    # Handle backward compatibility - convert sugar_content to carbs_per_100g if needed
+    carbs_per_100g = entry_data.carbs_per_100g
+    if carbs_per_100g is None and entry_data.sugar_content is not None:
+        # Legacy mode: assume sugar_content was actually carbs per 100g
+        carbs_per_100g = entry_data.sugar_content * 100  # Convert from per gram to per 100g
+    elif carbs_per_100g is None:
+        carbs_per_100g = 0.0
+    
+    # Calculate SugarPoints
+    sugar_points_data = calculate_sugar_points(carbs_per_100g, entry_data.portion_size)
+    
     entry = FoodEntry(
         user_id=current_user.id,
         name=entry_data.name,
-        sugar_content=entry_data.sugar_content,
+        # Legacy fields for backward compatibility
+        sugar_content=entry_data.sugar_content or 0.0,
         portion_size=entry_data.portion_size,
-        calories=entry_data.calories,
+        calories=entry_data.calories,  # Deprecated but kept for compatibility
+        # New SugarPoints system fields
+        carbs_per_100g=carbs_per_100g,
+        fat_per_100g=entry_data.fat_per_100g or 0.0,
+        protein_per_100g=entry_data.protein_per_100g or 0.0,
+        sugar_points=sugar_points_data["sugar_points"],
+        sugar_point_blocks=sugar_points_data["sugar_point_blocks"],
         meal_type=entry_data.meal_type or "snack"
     )
     
@@ -302,24 +320,32 @@ async def create_food_entry(entry_data: FoodEntryCreate, current_user: User = De
     entry_dict = entry.dict()
     entry_dict['timestamp'] = entry_dict['timestamp'].isoformat()
     
-    # Try to insert with meal_type, if it fails, insert without it
+    # Try to insert with new fields, with fallback for older schema
     try:
         result = supabase.table('food_entries').insert(entry_dict).execute()
         if not result.data:
             raise HTTPException(status_code=500, detail="Failed to create food entry")
         return entry
     except Exception as e:
-        # If meal_type column doesn't exist, try without it
-        if "meal_type" in str(e):
-            logger.warning("meal_type column not found, inserting without it")
-            entry_dict_no_meal = entry_dict.copy()
-            del entry_dict_no_meal['meal_type']
+        # If new columns don't exist, try with minimal fields
+        if any(field in str(e) for field in ["carbs_per_100g", "fat_per_100g", "protein_per_100g", "sugar_points"]):
+            logger.warning("New SugarPoints columns not found, inserting with legacy fields")
+            legacy_entry_dict = {
+                "id": entry_dict["id"],
+                "user_id": entry_dict["user_id"],
+                "name": entry_dict["name"],
+                "sugar_content": entry_dict["sugar_content"],
+                "portion_size": entry_dict["portion_size"],
+                "calories": entry_dict.get("calories"),
+                "meal_type": entry_dict.get("meal_type", "snack"),
+                "timestamp": entry_dict["timestamp"]
+            }
             
-            result = supabase.table('food_entries').insert(entry_dict_no_meal).execute()
+            result = supabase.table('food_entries').insert(legacy_entry_dict).execute()
             if not result.data:
                 raise HTTPException(status_code=500, detail="Failed to create food entry")
             
-            # Return entry with meal_type for API consistency
+            # Return entry with calculated SugarPoints for API consistency
             return entry
         else:
             raise HTTPException(status_code=500, detail=f"Failed to create food entry: {str(e)}")
