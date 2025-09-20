@@ -176,24 +176,6 @@ export default function RegisterScreen() {
             />
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>
-              Daily SugarPoints Goal (Optional)
-            </Text>
-            <TextInput
-              style={styles.input}
-              value={formData.dailyGoal}
-              onChangeText={(value) => updateFormData('dailyGoal', value)}
-              placeholder="100"
-              placeholderTextColor={colors.text.tertiary}
-              keyboardType="numeric"
-              accessibilityLabel="Daily SugarPoints goal input"
-            />
-            <Text style={styles.helperText}>
-              We'll help you personalize this in your onboarding quiz
-            </Text>
-          </View>
-
           <Button
             title="Create Account"
             onPress={handleRegister}
