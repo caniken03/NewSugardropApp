@@ -5,10 +5,12 @@ import {
   StyleSheet,
   SafeAreaView,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { colors, typography, spacing, layout } from '@/design-system';
 import { Button, Card } from '@/design-system/components';
+import { apiClient } from '@/services/api';
 import OnboardingStep1 from '@/components/onboarding/Step1HealthProfile';
 import OnboardingStep2 from '@/components/onboarding/Step2SugarPointsTarget';
 import OnboardingStep3 from '@/components/onboarding/Step3Tutorial';
