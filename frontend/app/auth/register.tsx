@@ -53,13 +53,10 @@ export default function RegisterScreen() {
     try {
       console.log('Starting registration...');
       await register(email.trim(), password, name.trim(), 100); // Default SugarPoints goal
-      console.log('Registration successful, waiting for auth state...');
+      console.log('Registration successful, redirecting to onboarding...');
       
-      // Wait a moment for auth state to update
-      setTimeout(() => {
-        console.log('Redirecting to onboarding...');
-        router.replace('/onboarding');
-      }, 1000);
+      // Redirect to onboarding for new users
+      router.replace('/onboarding');
       
     } catch (error: any) {
       console.error('Registration error:', error);
@@ -67,9 +64,9 @@ export default function RegisterScreen() {
         'Registration Failed',
         error.response?.data?.detail || 'Please try again'
       );
-    } finally {
-      setLoading(false);
+      setLoading(false); // Only set loading false on error
     }
+    // Don't set loading false on success - let the redirect handle it
   };
 
   const updateFormData = (field: string, value: string) => {
