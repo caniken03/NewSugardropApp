@@ -23,6 +23,8 @@ class SugarDropAPITester:
         self.test_results = {
             "authentication": {"passed": 0, "failed": 0, "errors": []},
             "food_tracking": {"passed": 0, "failed": 0, "errors": []},
+            "passio_integration": {"passed": 0, "failed": 0, "errors": []},
+            "meal_categorization": {"passed": 0, "failed": 0, "errors": []},
             "ai_chat": {"passed": 0, "failed": 0, "errors": []},
             "knowledge_base": {"passed": 0, "failed": 0, "errors": []},
             "health_check": {"passed": 0, "failed": 0, "errors": []}
