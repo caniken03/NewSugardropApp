@@ -57,6 +57,8 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [age, setAge] = useState(data.age?.toString() || '');
   const [gender, setGender] = useState(data.gender || '');
+  const [currentWeight, setCurrentWeight] = useState('');
+  const [desiredWeight, setDesiredWeight] = useState('');
   const [activityLevel, setActivityLevel] = useState(data.activityLevel || '');
   const [healthGoals, setHealthGoals] = useState<string[]>(data.healthGoals || []);
 
