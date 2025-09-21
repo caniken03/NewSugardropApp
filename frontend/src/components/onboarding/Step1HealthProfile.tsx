@@ -235,11 +235,139 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
     </View>
   );
 
+  const renderWeightGoalsQuestion = () => {
+    const getEncouragingMessage = () => {
+      const current = parseFloat(currentWeight);
+      const desired = parseFloat(desiredWeight);
+      
+      if (!current || !desired || current <= desired) {
+        return null;
+      }
+      
+      const weightToLose = current - desired;
+      
+      if (weightToLose <= 5) {
+        return {
+          message: `Just ${weightToLose.toFixed(1)} lbs to go! 🎯`,
+          description: "You're so close to your goal - this is absolutely achievable with SugarDrop!",
+          color: colors.success[400],
+          icon: 'trophy-outline'
+        };
+      } else if (weightToLose <= 15) {
+        return {
+          message: `${weightToLose.toFixed(1)} lbs is totally doable! 💪`,
+          description: "This is a perfect healthy weight loss goal. SugarDrop will help you get there sustainably.",
+          color: colors.primary[400],
+          icon: 'trending-down-outline'
+        };
+      } else if (weightToLose <= 30) {
+        return {
+          message: `${weightToLose.toFixed(1)} lbs - Let's break this into smaller wins! 🌟`,
+          description: "This is absolutely achievable! We'll help you reach your goal step by step with SugarDrop.",
+          color: colors.primary[400],
+          icon: 'checkmark-circle-outline'
+        };
+      } else {
+        return {
+          message: `Every journey starts with a single step! 🚀`,
+          description: "Your ${weightToLose.toFixed(1)} lb goal is achievable with the right approach. SugarDrop will guide you every step of the way.",
+          color: colors.primary[400],
+          icon: 'heart-outline'
+        };
+      }
+    };
+
+    const encouragement = getEncouragingMessage();
+
+    return (
+      <View style={styles.questionContainer}>
+        <View style={styles.weightInputRow}>
+          <View style={styles.weightInput}>
+            <Text style={styles.label}>Current Weight</Text>
+            <TextInput
+              style={styles.input}
+              value={currentWeight}
+              onChangeText={setCurrentWeight}
+              placeholder="150"
+              placeholderTextColor={colors.text.tertiary}
+              keyboardType="numeric"
+              maxLength={4}
+            />
+            <Text style={styles.weightUnit}>lbs</Text>
+          </View>
+          
+          <View style={styles.weightInput}>
+            <Text style={styles.label}>Goal Weight</Text>
+            <TextInput
+              style={styles.input}
+              value={desiredWeight}
+              onChangeText={setDesiredWeight}
+              placeholder="140"
+              placeholderTextColor={colors.text.tertiary}
+              keyboardType="numeric"
+              maxLength={4}
+            />
+            <Text style={styles.weightUnit}>lbs</Text>
+          </View>
+        </View>
+
+        {encouragement && (
+          <Card variant="elevated" style={[styles.encouragementCard, { borderColor: encouragement.color + '40' }]}>
+            <View style={styles.encouragementHeader}>
+              <Ionicons name={encouragement.icon as any} size={32} color={encouragement.color} />
+              <Text style={[styles.encouragementMessage, { color: encouragement.color }]}>
+                {encouragement.message}
+              </Text>
+            </View>
+            <Text style={styles.encouragementDescription}>
+              {encouragement.description}
+            </Text>
+          </Card>
+        )}
+      </View>
+    );
+  };
+
+  const renderGoalsQuestion = () => (
+    <View style={styles.questionContainer}>
+      <View style={styles.goalsGrid}>
+        {healthGoalOptions.map((goal) => (
+          <TouchableOpacity
+            key={goal.key}
+            style={[
+              styles.goalCard,
+              healthGoals.includes(goal.key) && styles.selectedGoal,
+            ]}
+            onPress={() => toggleHealthGoal(goal.key)}>
+            <Ionicons
+              name={goal.icon as any}
+              size={24}
+              color={healthGoals.includes(goal.key) ? colors.primary[400] : colors.text.tertiary}
+            />
+            <Text style={[
+              styles.goalLabel,
+              healthGoals.includes(goal.key) && styles.selectedGoalLabel,
+            ]}>
+              {goal.label}
+            </Text>
+            {healthGoals.includes(goal.key) && (
+              <View style={styles.checkIcon}>
+                <Ionicons name="checkmark-circle" size={20} color={colors.primary[400]} />
+              </View>
+            )}
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
   const renderCurrentQuestion = () => {
     switch (currentQ.type) {
       case 'age_gender':
         return renderAgeGenderQuestion();
-      case 'goals':
+      case 'weight_goals':
+        return renderWeightGoalsQuestion();
+      case 'health_goals':
         return renderGoalsQuestion();
       default:
         return null;
