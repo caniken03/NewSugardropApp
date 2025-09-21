@@ -23,6 +23,8 @@ export interface OnboardingData {
   // Step 1 - Health Profile
   age?: number;
   gender?: 'male' | 'female' | 'other';
+  currentWeight?: number;
+  desiredWeight?: number;
   healthGoals?: string[];
   
   // Step 2 - Body Type Quiz Results
