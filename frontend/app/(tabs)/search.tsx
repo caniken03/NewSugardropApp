@@ -262,8 +262,6 @@ export default function SearchScreen() {
         items={navigationItems}
       />
     </View>
-  );    </View>
-  );
 }
 
 const styles = StyleSheet.create({
