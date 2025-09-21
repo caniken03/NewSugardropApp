@@ -16,7 +16,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/services/api';
 import AnimatedNavigationModal from '@/components/AnimatedNavigationModal';
 import { FoodEntryCard, Card, Button } from '@/design-system/components';
-import { colors, typography, spacing, layout, borderRadius, touchTargets } from '@/design-system';
+import { colors } from '@/design-system/colors';
+import { typography } from '@/design-system/typography';
+import { spacing, layout, borderRadius, touchTargets } from '@/design-system/spacing';
 
 const navigationItems = [
   { key: 'log_food', title: 'Log Food', icon: 'restaurant-outline', route: '/(modals)/add-entry', description: 'Add meal manually' },
