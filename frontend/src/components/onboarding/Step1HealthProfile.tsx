@@ -328,39 +328,6 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
     );
   };
 
-  const renderGoalsQuestion = () => (
-    <View style={styles.questionContainer}>
-      <View style={styles.goalsGrid}>
-        {healthGoalOptions.map((goal) => (
-          <TouchableOpacity
-            key={goal.key}
-            style={[
-              styles.goalCard,
-              healthGoals.includes(goal.key) && styles.selectedGoal,
-            ]}
-            onPress={() => toggleHealthGoal(goal.key)}>
-            <Ionicons
-              name={goal.icon as any}
-              size={24}
-              color={healthGoals.includes(goal.key) ? colors.primary[400] : colors.text.tertiary}
-            />
-            <Text style={[
-              styles.goalLabel,
-              healthGoals.includes(goal.key) && styles.selectedGoalLabel,
-            ]}>
-              {goal.label}
-            </Text>
-            {healthGoals.includes(goal.key) && (
-              <View style={styles.checkIcon}>
-                <Ionicons name="checkmark-circle" size={20} color={colors.primary[400]} />
-              </View>
-            )}
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-  );
-
   const renderCurrentQuestion = () => {
     switch (currentQ.type) {
       case 'age_gender':
