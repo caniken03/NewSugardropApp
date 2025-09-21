@@ -8,6 +8,8 @@ export default function TabLayout() {
         headerShown: false,
         animation: 'fade',
         animationDuration: 200,
+        detachInactiveScreens: false,
+        freezeOnBlur: false,
         contentStyle: {
           backgroundColor: '#ffffff',
         },
@@ -15,7 +17,7 @@ export default function TabLayout() {
           backgroundColor: '#ffffff',
         },
         cardOverlayEnabled: false,
-        gestureEnabled: true,
+        gestureEnabled: false, // Disabled on web to prevent flashing
         gestureDirection: 'horizontal',
       }}>
       <Stack.Screen
