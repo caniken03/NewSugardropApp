@@ -7,14 +7,22 @@ import {
   FlatList,
   Alert,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/services/api';
-import { colors, typography, spacing, layout, touchTargets, borderRadius } from '@/design-system';
-import { Button, Card, FoodEntryCard } from '@/design-system/components';
+import AnimatedNavigationModal from '@/components/AnimatedNavigationModal';
+
+const navigationItems = [
+  { key: 'log_food', title: 'Log Food', icon: 'restaurant-outline', route: '/(modals)/add-entry', description: 'Add meal manually' },
+  { key: 'scan_food', title: 'Scan Food', icon: 'camera-outline', route: '/(tabs)/scanner', description: 'Camera recognition' },
+  { key: 'ai_coach', title: 'AI Coach', icon: 'chatbubble-ellipses-outline', route: '/(tabs)/aichat', description: 'Get nutrition advice' },
+  { key: 'progress', title: 'Progress', icon: 'analytics-outline', route: '/(tabs)/progress', description: 'View your stats' },
+  { key: 'home', title: 'Home', icon: 'home-outline', route: '/(tabs)/home', description: 'Back to dashboard' }
+];
 
 interface FoodItem {
   id: string;
