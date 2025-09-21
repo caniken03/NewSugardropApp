@@ -67,10 +67,16 @@ export default function Step1HealthProfile({ data, onNext, onSkip }: Step1Props)
       type: 'age_gender' as const,
     },
     {
-      id: 'goals',
+      id: 'weight_goals',
+      title: 'What are your weight goals?',
+      subtitle: 'This helps us provide personalized encouragement',
+      type: 'weight_goals' as const,
+    },
+    {
+      id: 'health_goals',
       title: 'What are your health goals?',
       subtitle: 'Select all that apply (you can change these later)',
-      type: 'goals' as const,
+      type: 'health_goals' as const,
     }
   ];
 
