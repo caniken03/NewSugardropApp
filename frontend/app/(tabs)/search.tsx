@@ -126,13 +126,11 @@ export default function SearchScreen() {
               {Math.round(item.confidence * 100)}% confidence
             </Text>
           )}
-      );
-}
+        </View>
         <View style={styles.foodSugarPoints}>
           <Text style={styles.foodPoints}>{sugarPoints}</Text>
           <Text style={styles.foodPointsLabel}>SP</Text>
-      );
-}
+        </View>
       </TouchableOpacity>
     );
   };
@@ -184,8 +182,7 @@ export default function SearchScreen() {
                 <Ionicons name="close-circle" size={20} color="#666666" />
               </TouchableOpacity>
             )}
-        );
-}
+          </View>
           
           <TouchableOpacity
             style={styles.searchButton}
@@ -193,10 +190,8 @@ export default function SearchScreen() {
             disabled={!query.trim() || loading}>
             <Text style={styles.searchButtonText}>Search</Text>
           </TouchableOpacity>
-      );
-}
-    );
-}
+        </View>
+      </View>
 
       {/* Results */}
       <View style={styles.resultsContainer}>
@@ -220,8 +215,7 @@ export default function SearchScreen() {
             <Text style={styles.emptySubtitle}>
               Try searching for "{query}" with different keywords
             </Text>
-        );
-}
+          </View>
         ) : (
           <>
             <Text style={styles.resultsHeader}>
@@ -230,8 +224,7 @@ export default function SearchScreen() {
             {loadingPopular ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#4A90E2" />
-            );
-}
+              </View>
             ) : (
               <FlatList
                 data={popularFoods}
@@ -246,15 +239,13 @@ export default function SearchScreen() {
                     <Text style={styles.emptySubtitle}>
                       Try searching for specific foods to get started
                     </Text>
-                );
-}
+                  </View>
                 }
               />
             )}
           </>
         )}
-    );
-}
+      </View>
 
       {/* Floating Plus Button */}
       <TouchableOpacity
@@ -270,10 +261,8 @@ export default function SearchScreen() {
         onNavigate={handleNavigationPress}
         items={navigationItems}
       />
-  );
-}
-  );
-}
+    </View>
+    </View>
 const styles = StyleSheet.create({
   container: {
     flex: 1,
