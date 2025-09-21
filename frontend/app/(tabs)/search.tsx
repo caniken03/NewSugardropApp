@@ -347,6 +347,72 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+
+  // Food Item Styles
+  foodItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    padding: spacing.lg,
+    marginBottom: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+
+  foodInfo: {
+    flex: 1,
+    marginRight: spacing.md,
+  },
+
+  foodName: {
+    ...typography.bodyLarge,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
+  },
+
+  foodDetails: {
+    ...typography.bodySmall,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+
+  foodConfidence: {
+    ...typography.bodySmall,
+    color: colors.text.tertiary,
+    fontStyle: 'italic',
+  },
+
+  foodSugarPoints: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary[50],
+    borderRadius: borderRadius.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    minWidth: 60,
+  },
+
+  foodPoints: {
+    ...typography.headlineSmall,
+    fontWeight: '700',
+    color: colors.primary[600],
+    lineHeight: 24,
+  },
+
+  foodPointsLabel: {
+    ...typography.bodySmall,
+    color: colors.primary[500],
+    fontWeight: '500',
+    marginTop: -2,
+  },
+
   emptySubtitle: {
     ...typography.bodyMedium,
     color: colors.text.secondary,
