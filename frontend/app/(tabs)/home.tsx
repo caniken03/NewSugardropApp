@@ -171,37 +171,13 @@ export default function HomeScreen() {
         <Ionicons name="add" size={28} color="#ffffff" />
       </TouchableOpacity>
 
-      {/* Navigation Modal */}
-      <Modal
+      {/* Animated Navigation Modal */}
+      <AnimatedNavigationModal
         visible={showNavigation}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowNavigation(false)}>
-        <TouchableOpacity 
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setShowNavigation(false)}>
-          <View style={styles.navigationModal}>
-            <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>Quick Actions</Text>
-            
-            <View style={styles.navigationGrid}>
-              {navigationItems.map((item) => (
-                <TouchableOpacity
-                  key={item.key}
-                  style={styles.navigationItem}
-                  onPress={() => handleNavigationPress(item.route)}>
-                  <View style={styles.navigationIcon}>
-                    <Ionicons name={item.icon as any} size={24} color={colors.primary[400]} />
-                  </View>
-                  <Text style={styles.navigationTitle}>{item.title}</Text>
-                  <Text style={styles.navigationDescription}>{item.description}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+        onClose={() => setShowNavigation(false)}
+        onNavigate={handleNavigationPress}
+        items={navigationItems}
+      />
     </View>
   );
 }
