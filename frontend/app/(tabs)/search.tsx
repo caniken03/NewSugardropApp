@@ -47,6 +47,7 @@ export default function SearchScreen() {
   const [popularFoods, setPopularFoods] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingPopular, setLoadingPopular] = useState(true);
+  const [showNavigation, setShowNavigation] = useState(false);
 
   // Load popular foods on mount
   useEffect(() => {
@@ -85,12 +86,14 @@ export default function SearchScreen() {
     }
   };
 
+  const handleNavigationPress = (route: string) => {
+    setShowNavigation(false);
+    setTimeout(() => router.push(route), 100);
+  };
+
   const handleFoodSelect = (food: FoodItem) => {
-    // Calculate SugarPoints from carbs
     const sugarPoints = Math.round(food.carbs_per_100g);
-    const sugarPointBlocks = Math.round(sugarPoints / 6);
     
-    // Navigate to add entry with pre-filled data
     router.push({
       pathname: '/(modals)/add-entry',
       params: {
@@ -106,25 +109,27 @@ export default function SearchScreen() {
 
   const renderFoodItem = ({ item }: { item: FoodItem }) => {
     const sugarPoints = Math.round(item.carbs_per_100g);
-    const sugarPointBlocks = Math.round(sugarPoints / 6);
     
     return (
-      <FoodEntryCard
-        food={{
-          id: item.id,
-          name: item.name,
-          sugar_points: sugarPoints,
-          sugar_point_blocks: sugarPointBlocks,
-          carbs_per_100g: item.carbs_per_100g,
-          fat_per_100g: item.fat_per_100g,
-          protein_per_100g: item.protein_per_100g,
-          portion_size: 100, // Default portion for search results
-          source: 'search',
-          confidence: item.confidence,
-        }}
-        onPress={() => handleFoodSelect(item)}
-        accessibilityLabel={`Add ${item.name} to food log`}
-      />
+      <TouchableOpacity
+        style={styles.foodItem}
+        onPress={() => handleFoodSelect(item)}>
+        <View style={styles.foodInfo}>
+          <Text style={styles.foodName}>{item.name}</Text>
+          <Text style={styles.foodDetails}>
+            {sugarPoints} SugarPoints per 100g • {item.category}
+          </Text>
+          {item.confidence && (
+            <Text style={styles.foodConfidence}>
+              {Math.round(item.confidence * 100)}% confidence
+            </Text>
+          )}
+        </View>
+        <View style={styles.foodSugarPoints}>
+          <Text style={styles.foodPoints}>{sugarPoints}</Text>
+          <Text style={styles.foodPointsLabel}>SP</Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
