@@ -9,60 +9,70 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../src/contexts/ThemeContext';
-import { useAuth } from '../../src/contexts/AuthContext';
-import { apiClient } from '../../src/services/api';
-import AuthGuard from '../../src/components/AuthGuard';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '@/contexts/AuthContext';
+import { apiClient } from '@/services/api';
+import AnimatedNavigationModal from '@/components/AnimatedNavigationModal';
+
+const navigationItems = [
+  { key: 'log_food', title: 'Log Food', icon: 'restaurant-outline', route: '/(modals)/add-entry', description: 'Add meal manually' },
+  { key: 'scan_food', title: 'Scan Food', icon: 'camera-outline', route: '/(tabs)/scanner', description: 'Camera recognition' },
+  { key: 'search_food', title: 'Search Foods', icon: 'search-outline', route: '/(tabs)/search', description: 'Browse database' },
+  { key: 'progress', title: 'Progress', icon: 'analytics-outline', route: '/(tabs)/progress', description: 'View your stats' },
+  { key: 'home', title: 'Home', icon: 'home-outline', route: '/(tabs)/home', description: 'Back to dashboard' }
+];
 
 interface Message {
   id: string;
   text: string;
   isUser: boolean;
   timestamp: Date;
+  isTyping?: boolean;
 }
 
-export default function ChatScreen() {
-  return (
-    <AuthGuard>
-      <ChatContent />
-    </AuthGuard>
-  );
-}
+const suggestedQuestions = [
+  "What foods are highest in SugarPoints?",
+  "How can I reduce my daily SugarPoints?",
+  "Which snacks are lowest in SugarPoints?",
+  "How do I read nutrition labels?",
+];
 
-function ChatContent() {
-  const { colors } = useTheme();
+export default function AIChatScreen() {
   const { user } = useAuth();
-  const scrollViewRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
+  const flatListRef = useRef<FlatList>(null);
   
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: `Hello ${user?.name || 'there'}! 👋 I'm your AI nutrition coach. I'm here to help you manage your sugar intake and maintain a healthy diet. How can I assist you today?`,
-      isUser: false,
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showNavigation, setShowNavigation] = useState(false);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Add welcome message
+    const welcomeMessage: Message = {
+      id: 'welcome',
+      text: `Hi ${user?.name}! I'm your AI nutrition coach. I can help you understand SugarPoints, suggest healthier alternatives, and support your nutrition goals. What would you like to know?`,
+      isUser: false,
+      timestamp: new Date(),
+    };
+    setMessages([welcomeMessage]);
+  }, [user]);
 
-  const scrollToBottom = () => {
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+  const handleNavigationPress = (route: string) => {
+    setShowNavigation(false);
+    setTimeout(() => router.push(route), 100);
   };
 
-  const sendMessage = async () => {
-    if (!inputText.trim() || loading) return;
+  const sendMessage = async (messageText?: string) => {
+    const textToSend = messageText || inputText.trim();
+    if (!textToSend) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: inputText.trim(),
+      text: textToSend,
       isUser: true,
       timestamp: new Date(),
     };
@@ -71,118 +81,132 @@ function ChatContent() {
     setInputText('');
     setLoading(true);
 
+    // Add typing indicator
+    const typingMessage: Message = {
+      id: 'typing',
+      text: '...',
+      isUser: false,
+      timestamp: new Date(),
+      isTyping: true,
+    };
+    setMessages(prev => [...prev, typingMessage]);
+
     try {
       const response = await apiClient.post('/ai/chat', {
-        message: userMessage.text,
+        message: textToSend,
       });
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: response.data.response || 'Sorry, I encountered an issue. Please try again.',
+        text: response.data.response,
         isUser: false,
         timestamp: new Date(),
       };
 
-      setMessages(prev => [...prev, aiMessage]);
-    } catch (error: any) {
-      console.error('Chat error:', error);
+      // Remove typing indicator and add AI response
+      setMessages(prev => prev.filter(m => m.id !== 'typing').concat(aiMessage));
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Sorry, I\'m having trouble connecting right now. Please try again later.',
+        text: 'Sorry, I\'m having trouble responding right now. Please try again in a moment.',
         isUser: false,
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      
+      setMessages(prev => prev.filter(m => m.id !== 'typing').concat(errorMessage));
+      
+      Alert.alert('Chat Error', 'Failed to get AI response. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const quickQuestions = [
-    "What's my daily sugar intake today?",
-    "How can I reduce sugar cravings?",
-    "Is honey better than regular sugar?",
-    "What are some low-sugar snack ideas?",
-  ];
-
-  const sendQuickQuestion = (question: string) => {
-    setInputText(question);
-  };
+  const renderMessage = ({ item }: { item: Message }) => (
+    <View style={[
+      styles.messageContainer,
+      item.isUser ? styles.userMessageContainer : styles.aiMessageContainer
+    ]}>
+      <View style={[
+        styles.messageBubble,
+        item.isUser ? styles.userMessage : styles.aiMessage,
+        item.isTyping && styles.typingMessage,
+      ]}>
+        <Text style={[
+          styles.messageText,
+          item.isUser ? styles.userMessageText : styles.aiMessageText,
+          item.isTyping && styles.typingText,
+        ]}>
+          {item.text}
+        </Text>
+        
+        <Text style={[
+          styles.timestamp,
+          item.isUser ? styles.userTimestamp : styles.aiTimestamp,
+        ]}>
+          {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </Text>
+      </View>
+    </View>
+  );
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={100}>
+      style={[styles.container, { paddingTop: insets.top }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#000000" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>AI Coach</Text>
+        <View style={styles.headerSpacer} />
+      </View>
+
       {/* Messages */}
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.messagesContainer}
-        contentContainerStyle={styles.messagesContent}
-        showsVerticalScrollIndicator={false}>
-        
-        {messages.map((message) => (
-          <View
-            key={message.id}
-            style={[
-              styles.messageContainer,
-              message.isUser ? styles.userMessage : styles.aiMessage,
-            ]}>
-            <View
-              style={[
-                styles.messageBubble,
-                {
-                  backgroundColor: message.isUser ? colors.primary : colors.surface,
-                },
-              ]}>
-              <Text
-                style={[
-                  styles.messageText,
-                  {
-                    color: message.isUser ? '#ffffff' : colors.text,
-                  },
-                ]}>
-                {message.text}
-              </Text>
-            </View>
-            <Text style={[styles.timestamp, { color: colors.textSecondary }]}>
-              {message.timestamp.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+      <View style={styles.messagesContainer}>
+        {messages.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="chatbubble-ellipses-outline" size={64} color="#cccccc" />
+            <Text style={styles.emptyTitle}>Start a conversation</Text>
+            <Text style={styles.emptySubtitle}>
+              Ask questions about nutrition, SugarPoints, or healthy eating habits
             </Text>
           </View>
-        ))}
-
-        {loading && (
-          <View style={styles.typingContainer}>
-            <View style={[styles.messageBubble, { backgroundColor: colors.surface }]}>
-              <View style={styles.typingIndicator}>
-                <View style={[styles.typingDot, { backgroundColor: colors.textSecondary }]} />
-                <View style={[styles.typingDot, { backgroundColor: colors.textSecondary }]} />
-                <View style={[styles.typingDot, { backgroundColor: colors.textSecondary }]} />
-              </View>
-            </View>
-          </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={(item) => item.id}
+            style={styles.messagesList}
+            contentContainerStyle={styles.messagesContent}
+            showsVerticalScrollIndicator={false}
+            onContentSizeChange={() => {
+              flatListRef.current?.scrollToEnd({ animated: true });
+            }}
+          />
         )}
-      </ScrollView>
+      </View>
 
-      {/* Quick Questions */}
+      {/* Suggested Questions */}
       {messages.length <= 1 && (
-        <View style={styles.quickQuestionsContainer}>
-          <Text style={[styles.quickQuestionsTitle, { color: colors.text }]}>
-            Quick Questions:
-          </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {quickQuestions.map((question, index) => (
+        <View style={styles.suggestionsContainer}>
+          <Text style={styles.suggestionsTitle}>Suggested Questions</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.suggestionsList}>
+            {suggestedQuestions.map((question, index) => (
               <TouchableOpacity
                 key={index}
-                style={[styles.quickQuestionChip, { backgroundColor: colors.surface }]}
-                onPress={() => sendQuickQuestion(question)}>
-                <Text style={[styles.quickQuestionText, { color: colors.text }]}>
-                  {question}
-                </Text>
+                style={styles.suggestionButton}
+                onPress={() => sendMessage(question)}>
+                <Text style={styles.suggestionText}>{question}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -190,34 +214,51 @@ function ChatContent() {
       )}
 
       {/* Input */}
-      <View style={[styles.inputContainer, { backgroundColor: colors.surface }]}>
-        <TextInput
-          style={[styles.textInput, { color: colors.text }]}
-          value={inputText}
-          onChangeText={setInputText}
-          placeholder="Ask about nutrition, sugar intake, healthy tips..."
-          placeholderTextColor={colors.textSecondary}
-          multiline
-          maxLength={500}
-          onSubmitEditing={sendMessage}
-          blurOnSubmit={false}
-        />
-        <TouchableOpacity
-          style={[
-            styles.sendButton,
-            {
-              backgroundColor: inputText.trim() ? colors.primary : colors.border,
-            },
-          ]}
-          onPress={sendMessage}
-          disabled={!inputText.trim() || loading}>
-          <Ionicons
-            name="send"
-            size={20}
-            color={inputText.trim() ? '#ffffff' : colors.textSecondary}
+      <View style={styles.inputContainer}>
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={styles.textInput}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Ask about nutrition, SugarPoints, or healthy eating..."
+            placeholderTextColor="#999999"
+            multiline
+            maxLength={500}
+            returnKeyType="send"
+            onSubmitEditing={() => sendMessage()}
+            editable={!loading}
           />
-        </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              (!inputText.trim() || loading) && styles.sendButtonDisabled,
+            ]}
+            onPress={() => sendMessage()}
+            disabled={!inputText.trim() || loading}>
+            <Ionicons
+              name={loading ? "hourglass" : "send"}
+              size={20}
+              color={(!inputText.trim() || loading) ? "#cccccc" : "#4A90E2"}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
+
+      {/* Floating Plus Button */}
+      <TouchableOpacity
+        style={[styles.floatingButton, { bottom: insets.bottom + 100 }]} // Higher position to avoid input
+        onPress={() => setShowNavigation(true)}>
+        <Ionicons name="add" size={28} color="#ffffff" />
+      </TouchableOpacity>
+
+      {/* Navigation Modal */}
+      <AnimatedNavigationModal
+        visible={showNavigation}
+        onClose={() => setShowNavigation(false)}
+        onNavigate={handleNavigationPress}
+        items={navigationItems}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -225,88 +266,232 @@ function ChatContent() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#ffffff',
   },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#ffffff',
+  },
+
+  backButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 22,
+  },
+
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    flex: 1,
+    textAlign: 'center',
+  },
+
+  headerSpacer: {
+    width: 44,
+  },
+
+  // Messages
   messagesContainer: {
     flex: 1,
   },
-  messagesContent: {
-    padding: 16,
-    paddingBottom: 20,
+
+  messagesList: {
+    flex: 1,
   },
+
+  messagesContent: {
+    padding: 24,
+    paddingBottom: 16,
+  },
+
   messageContainer: {
     marginBottom: 16,
   },
-  userMessage: {
+
+  userMessageContainer: {
     alignItems: 'flex-end',
   },
-  aiMessage: {
+
+  aiMessageContainer: {
     alignItems: 'flex-start',
   },
+
   messageBubble: {
     maxWidth: '80%',
     borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    padding: 16,
   },
+
+  userMessage: {
+    backgroundColor: '#000000',
+    borderBottomRightRadius: 4,
+  },
+
+  aiMessage: {
+    backgroundColor: '#f8f9fa',
+    borderBottomLeftRadius: 4,
+  },
+
+  typingMessage: {
+    backgroundColor: '#f0f0f0',
+  },
+
   messageText: {
     fontSize: 16,
     lineHeight: 22,
   },
+
+  userMessageText: {
+    color: '#ffffff',
+  },
+
+  aiMessageText: {
+    color: '#000000',
+  },
+
+  typingText: {
+    color: '#666666',
+    fontStyle: 'italic',
+  },
+
   timestamp: {
     fontSize: 12,
     marginTop: 4,
-    marginHorizontal: 16,
   },
-  typingContainer: {
-    alignItems: 'flex-start',
-    marginBottom: 16,
+
+  userTimestamp: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    textAlign: 'right',
   },
-  typingIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+
+  aiTimestamp: {
+    color: '#999999',
   },
-  typingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  quickQuestionsContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  quickQuestionsTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  quickQuestionChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
-    marginRight: 8,
-  },
-  quickQuestionText: {
-    fontSize: 14,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  textInput: {
+
+  // Empty State
+  emptyState: {
     flex: 1,
-    fontSize: 16,
-    maxHeight: 100,
-    paddingVertical: 8,
-  },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 32,
+  },
+
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000000',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+
+  emptySubtitle: {
+    fontSize: 16,
+    color: '#666666',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+
+  // Suggested Questions
+  suggestionsContainer: {
+    padding: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    backgroundColor: '#ffffff',
+  },
+
+  suggestionsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 12,
+  },
+
+  suggestionsList: {
+    gap: 8,
+    paddingHorizontal: 8,
+  },
+
+  suggestionButton: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+
+  suggestionText: {
+    fontSize: 14,
+    color: '#4A90E2',
+    textAlign: 'center',
+  },
+
+  // Input
+  inputContainer: {
+    padding: 24,
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    maxHeight: 120,
+  },
+
+  textInput: {
+    fontSize: 16,
+    color: '#000000',
+    flex: 1,
+    marginRight: 12,
+    maxHeight: 100,
+  },
+
+  sendButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  sendButtonDisabled: {
+    backgroundColor: '#f5f5f5',
+  },
+
+  // Floating Button
+  floatingButton: {
+    position: 'absolute',
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
