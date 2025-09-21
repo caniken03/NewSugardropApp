@@ -161,17 +161,16 @@ export default function SearchScreen() {
         
         <View style={styles.searchContainer}>
           <View style={styles.searchInputContainer}>
-            <Ionicons name="search-outline" size={20} color={colors.text.tertiary} />
+            <Ionicons name="search-outline" size={20} color="#666666" />
             <TextInput
               style={styles.searchInput}
               value={query}
               onChangeText={setQuery}
               placeholder="Search foods (e.g., apple, chicken, rice)"
-              placeholderTextColor={colors.text.tertiary}
+              placeholderTextColor="#999999"
               returnKeyType="search"
               onSubmitEditing={searchFoods}
               autoCorrect={false}
-              accessibilityLabel="Food search input"
             />
             {query.length > 0 && (
               <TouchableOpacity
@@ -179,20 +178,18 @@ export default function SearchScreen() {
                   setQuery('');
                   setResults([]);
                 }}
-                style={styles.clearButton}
-                accessibilityLabel="Clear search">
-                <Ionicons name="close-circle" size={20} color={colors.text.tertiary} />
+                style={styles.clearButton}>
+                <Ionicons name="close-circle" size={20} color="#666666" />
               </TouchableOpacity>
             )}
           </View>
           
-          <Button
-            title="Search"
-            onPress={searchFoods}
-            disabled={!query.trim() || loading}
-            loading={loading}
+          <TouchableOpacity
             style={styles.searchButton}
-          />
+            onPress={searchFoods}
+            disabled={!query.trim() || loading}>
+            <Text style={styles.searchButtonText}>Search</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -212,7 +209,13 @@ export default function SearchScreen() {
             />
           </>
         ) : query && !loading ? (
-          renderEmptyState()
+          <View style={styles.emptyState}>
+            <Ionicons name="search-outline" size={48} color="#cccccc" />
+            <Text style={styles.emptyTitle}>No foods found</Text>
+            <Text style={styles.emptySubtitle}>
+              Try searching for "{query}" with different keywords
+            </Text>
+          </View>
         ) : (
           <>
             <Text style={styles.resultsHeader}>
@@ -220,7 +223,7 @@ export default function SearchScreen() {
             </Text>
             {loadingPopular ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={colors.primary[400]} />
+                <ActivityIndicator size="large" color="#4A90E2" />
               </View>
             ) : (
               <FlatList
@@ -230,20 +233,36 @@ export default function SearchScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.resultsList}
                 ListEmptyComponent={
-                  <Card variant="outlined" style={styles.emptyState}>
-                    <Ionicons name="restaurant-outline" size={48} color={colors.neutral[300]} />
+                  <View style={styles.emptyState}>
+                    <Ionicons name="restaurant-outline" size={48} color="#cccccc" />
                     <Text style={styles.emptyTitle}>No popular foods available</Text>
                     <Text style={styles.emptySubtitle}>
                       Try searching for specific foods to get started
                     </Text>
-                  </Card>
+                  </View>
                 }
               />
             )}
           </>
         )}
       </View>
+
+      {/* Floating Plus Button */}
+      <TouchableOpacity
+        style={[styles.floatingButton, { bottom: insets.bottom + 24 }]}
+        onPress={() => setShowNavigation(true)}>
+        <Ionicons name="add" size={28} color="#ffffff" />
+      </TouchableOpacity>
+
+      {/* Navigation Modal */}
+      <AnimatedNavigationModal
+        visible={showNavigation}
+        onClose={() => setShowNavigation(false)}
+        onNavigate={handleNavigationPress}
+        items={navigationItems}
+      />
     </View>
+  );    </View>
   );
 }
 
