@@ -263,7 +263,6 @@ export default function SearchScreen() {
       />
     </View>
     </View>
-  );
 const styles = StyleSheet.create({
   container: {
     flex: 1,
