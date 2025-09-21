@@ -250,32 +250,34 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#ffffff',
   },
 
   // Search Header
   searchHeader: {
-    padding: layout.screenPadding,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border.light,
-    backgroundColor: colors.surface,
+    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#ffffff',
   },
 
   screenTitle: {
-    ...typography.headlineLarge,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 4,
   },
 
   screenSubtitle: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-    marginBottom: spacing.xl,
+    fontSize: 16,
+    color: '#666666',
+    marginBottom: 20,
   },
 
   searchContainer: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: 12,
     alignItems: 'flex-end',
   },
 
@@ -283,142 +285,156 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: '#f8f9fa',
     borderWidth: 1,
-    borderColor: colors.border.light,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.lg,
-    height: touchTargets.comfortable,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 48,
   },
 
   searchInput: {
     flex: 1,
-    marginLeft: spacing.sm,
-    ...typography.bodyMedium,
-    color: colors.text.primary,
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#000000',
   },
 
   clearButton: {
-    padding: spacing.xs,
+    padding: 4,
   },
 
   searchButton: {
     minWidth: 80,
+    backgroundColor: '#000000',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+
+  searchButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 
   // Results
   resultsContainer: {
     flex: 1,
-    padding: layout.screenPadding,
+    paddingHorizontal: 24,
+    paddingTop: 16,
   },
 
   resultsHeader: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
-    marginBottom: spacing.lg,
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 16,
   },
 
   resultsList: {
-    paddingBottom: spacing.huge,
+    paddingBottom: 100,
   },
 
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: spacing.huge,
+    paddingTop: 48,
   },
 
-  // Empty State
-  emptyState: {
-    alignItems: 'center',
-    padding: spacing.xxl,
-    marginTop: spacing.xl,
-  },
-
-  emptyTitle: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-  },
-
-
-  // Food Item Styles
+  // Food Items
   foodItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    marginBottom: spacing.sm,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    marginBottom: 8,
   },
 
   foodInfo: {
     flex: 1,
-    marginRight: spacing.md,
   },
 
   foodName: {
-    ...typography.bodyLarge,
+    fontSize: 16,
     fontWeight: '600',
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
+    color: '#000000',
+    marginBottom: 2,
   },
 
   foodDetails: {
-    ...typography.bodySmall,
-    color: colors.text.secondary,
-    marginBottom: spacing.xs,
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 2,
   },
 
   foodConfidence: {
-    ...typography.bodySmall,
-    color: colors.text.tertiary,
+    fontSize: 12,
+    color: '#999999',
     fontStyle: 'italic',
   },
 
   foodSugarPoints: {
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary[50],
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    minWidth: 60,
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 8,
+    minWidth: 48,
   },
 
   foodPoints: {
-    ...typography.headlineSmall,
+    fontSize: 16,
     fontWeight: '700',
-    color: colors.primary[600],
-    lineHeight: 24,
+    color: '#000000',
   },
 
   foodPointsLabel: {
-    ...typography.bodySmall,
-    color: colors.primary[500],
-    fontWeight: '500',
-    marginTop: -2,
+    fontSize: 10,
+    color: '#666666',
+  },
+
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    padding: 32,
+    marginTop: 24,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+  },
+
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000000',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
   },
 
   emptySubtitle: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
+    fontSize: 16,
+    color: '#666666',
     textAlign: 'center',
     lineHeight: 22,
+  },
+
+  // Floating Button
+  floatingButton: {
+    position: 'absolute',
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
