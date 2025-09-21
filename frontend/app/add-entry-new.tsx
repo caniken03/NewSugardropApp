@@ -112,52 +112,107 @@ export default function AddEntryModal() {
   const totalProtein = calculateTotalProtein();
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { paddingTop: insets.top }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
-          style={styles.closeButton}
-          onPress={() => router.back()}
-          accessibilityLabel="Close">
-          <Ionicons name="close" size={24} color={colors.text.secondary} />
+          style={styles.backButton}
+          onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#000000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Food Entry</Text>
+        <Text style={styles.headerTitle}>Add Food</Text>
         <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled">
-
-        {/* Meal Type Selection */}
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Food Name */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Meal Type</Text>
+          <Text style={styles.label}>Food name</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.name}
+            onChangeText={(value) => updateFormData('name', value)}
+            placeholder="e.g., Apple, Chicken breast"
+            placeholderTextColor="#999999"
+            autoCapitalize="words"
+          />
+        </View>
+
+        {/* SugarPoints */}
+        <View style={styles.section}>
+          <Text style={styles.label}>SugarPoints (per 100g)</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.sugarpointsPer100g}
+            onChangeText={(value) => updateFormData('sugarpointsPer100g', value)}
+            placeholder="14"
+            placeholderTextColor="#999999"
+            keyboardType="decimal-pad"
+          />
+          <Text style={styles.helper}>Check nutrition label for total SugarPoints</Text>
+        </View>
+
+        {/* Fat & Protein Row */}
+        <View style={styles.row}>
+          <View style={styles.halfSection}>
+            <Text style={styles.label}>Fat (per 100g)</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.fatPer100g}
+              onChangeText={(value) => updateFormData('fatPer100g', value)}
+              placeholder="0.2"
+              placeholderTextColor="#999999"
+              keyboardType="decimal-pad"
+            />
+          </View>
+          
+          <View style={styles.halfSection}>
+            <Text style={styles.label}>Protein (per 100g)</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.proteinPer100g}
+              onChangeText={(value) => updateFormData('proteinPer100g', value)}
+              placeholder="0.3"
+              placeholderTextColor="#999999"
+              keyboardType="decimal-pad"
+            />
+          </View>
+        </View>
+
+        {/* Portion Size */}
+        <View style={styles.section}>
+          <Text style={styles.label}>Portion size (grams)</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.portionSize}
+            onChangeText={(value) => updateFormData('portionSize', value)}
+            placeholder="100"
+            placeholderTextColor="#999999"
+            keyboardType="decimal-pad"
+          />
+        </View>
+
+        {/* Meal Type */}
+        <View style={styles.section}>
+          <Text style={styles.label}>Meal type</Text>
           <View style={styles.mealTypeGrid}>
             {mealTypes.map((meal) => (
               <TouchableOpacity
                 key={meal.key}
                 style={[
                   styles.mealTypeButton,
-                  formData.mealType === meal.key && styles.activeMealType,
+                  formData.mealType === meal.key && styles.selectedMealType,
                 ]}
-                onPress={() => updateFormData('mealType', meal.key)}
-                accessibilityRole="button"
-                accessibilityLabel={`Select ${meal.label}`}>
+                onPress={() => updateFormData('mealType', meal.key)}>
                 <Ionicons
                   name={meal.icon as any}
                   size={20}
-                  color={formData.mealType === meal.key ? colors.primary[400] : colors.text.tertiary}
+                  color={formData.mealType === meal.key ? '#4A90E2' : '#666666'}
                 />
-                <Text
-                  style={[
-                    styles.mealTypeText,
-                    formData.mealType === meal.key && styles.activeMealTypeText,
-                  ]}>
+                <Text style={[
+                  styles.mealTypeText,
+                  formData.mealType === meal.key && styles.selectedMealTypeText,
+                ]}>
                   {meal.label}
                 </Text>
               </TouchableOpacity>
@@ -165,138 +220,45 @@ export default function AddEntryModal() {
           </View>
         </View>
 
-        {/* Food Information */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Food Information</Text>
+        {/* Summary */}
+        <View style={styles.summarySection}>
+          <Text style={styles.summaryTitle}>Summary</Text>
           
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Food Name *</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.name}
-              onChangeText={(value) => updateFormData('name', value)}
-              placeholder="e.g., Apple, Chicken Breast, Brown Rice"
-              placeholderTextColor={colors.text.tertiary}
-              autoCapitalize="words"
-              accessibilityLabel="Food name input"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Carbohydrates (per 100g) *</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.carbsPer100g}
-              onChangeText={(value) => updateFormData('carbsPer100g', value)}
-              placeholder="e.g., 14.0"
-              placeholderTextColor={colors.text.tertiary}
-              keyboardType="decimal-pad"
-              accessibilityLabel="Carbohydrates input"
-            />
-            <Text style={styles.helperText}>
-              Check nutrition label for total carbohydrates
-            </Text>
-          </View>
-
-          <View style={styles.inputRow}>
-            <View style={styles.inputHalf}>
-              <Text style={styles.label}>Fat (per 100g)</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.fatPer100g}
-                onChangeText={(value) => updateFormData('fatPer100g', value)}
-                placeholder="0.0"
-                placeholderTextColor={colors.text.tertiary}
-                keyboardType="decimal-pad"
-                accessibilityLabel="Fat content input"
-              />
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryHeader}>
+              <Text style={styles.sugarpointsNumber}>
+                {sugarPoints === 0 ? 'Nil' : sugarPoints}
+              </Text>
+              <Text style={styles.sugarpointsLabel}>SugarPoints</Text>
             </View>
             
-            <View style={styles.inputHalf}>
-              <Text style={styles.label}>Protein (per 100g)</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.proteinPer100g}
-                onChangeText={(value) => updateFormData('proteinPer100g', value)}
-                placeholder="0.0"
-                placeholderTextColor={colors.text.tertiary}
-                keyboardType="decimal-pad"
-                accessibilityLabel="Protein content input"
-              />
+            <View style={styles.summaryDetails}>
+              {totalFat > 0 && (
+                <Text style={styles.summaryDetail}>Fat: {totalFat.toFixed(1)}g</Text>
+              )}
+              {totalProtein > 0 && (
+                <Text style={styles.summaryDetail}>Protein: {totalProtein.toFixed(1)}g</Text>
+              )}
+              <Text style={styles.summaryDetail}>Portion: {formData.portionSize}g</Text>
             </View>
           </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Portion Size (grams) *</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.portionSize}
-              onChangeText={(value) => updateFormData('portionSize', value)}
-              placeholder="100"
-              placeholderTextColor={colors.text.tertiary}
-              keyboardType="decimal-pad"
-              accessibilityLabel="Portion size input"
-            />
-            <Text style={styles.helperText}>
-              Weight of the portion you consumed
-            </Text>
-          </View>
-        </View>
-
-        {/* Nutrition Summary */}
-        <Card variant="elevated" style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Nutrition Summary</Text>
-          
-          <View style={styles.sugarPointsDisplay}>
-            <Text style={styles.sugarPointsAmount}>
-              {sugarPoints === 0 ? 'Nil SugarPoints' : `${sugarPoints} SugarPoints`}
-            </Text>
-            {sugarPoints > 0 && (
-              <Text style={styles.sugarPointsBlocks}>
-                {sugarPointBlocks} Blocks
-              </Text>
-            )}
-          </View>
-
-          <View style={styles.nutritionGrid}>
-            {totalFat > 0 && (
-              <View style={styles.nutritionItem}>
-                <Text style={styles.nutritionLabel}>Fat</Text>
-                <Text style={styles.nutritionValue}>{totalFat.toFixed(1)}g</Text>
-              </View>
-            )}
-            {totalProtein > 0 && (
-              <View style={styles.nutritionItem}>
-                <Text style={styles.nutritionLabel}>Protein</Text>
-                <Text style={styles.nutritionValue}>{totalProtein.toFixed(1)}g</Text>
-              </View>
-            )}
-            <View style={styles.nutritionItem}>
-              <Text style={styles.nutritionLabel}>Portion</Text>
-              <Text style={styles.nutritionValue}>{formData.portionSize}g</Text>
-            </View>
-          </View>
-        </Card>
-
-        {/* Action Buttons */}
-        <View style={styles.actions}>
-          <Button
-            title="Cancel"
-            variant="outline"
-            onPress={() => router.back()}
-            style={styles.cancelButton}
-          />
-          
-          <Button
-            title="Save Entry"
-            onPress={handleSave}
-            disabled={loading}
-            loading={loading}
-            style={styles.saveButton}
-          />
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+
+      {/* Save Button */}
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[styles.saveButton, loading && styles.saveButtonDisabled]}
+          onPress={handleSave}
+          disabled={loading}>
+          {loading ? (
+            <Text style={styles.saveButtonText}>Saving...</Text>
+          ) : (
+            <Text style={styles.saveButtonText}>Save Food Entry</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
