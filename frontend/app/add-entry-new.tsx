@@ -6,8 +6,6 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   TouchableOpacity,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -15,17 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/services/api';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { colors, typography, spacing, layout, touchTargets, borderRadius } from '@/design-system';
-import { Button, Card } from '@/design-system/components';
 
-interface MealType {
-  key: string;
-  label: string;
-  icon: string;
-}
-
-const mealTypes: MealType[] = [
+const mealTypes = [
   { key: 'breakfast', label: 'Breakfast', icon: 'sunny-outline' },
   { key: 'lunch', label: 'Lunch', icon: 'restaurant-outline' },
   { key: 'dinner', label: 'Dinner', icon: 'moon-outline' },
