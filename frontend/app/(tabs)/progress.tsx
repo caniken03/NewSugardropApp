@@ -5,288 +5,178 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Dimensions,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/services/api';
-import { colors, typography, spacing, layout, touchTargets, borderRadius } from '@/design-system';
-import { Card, Button, FoodEntryCard, ProgressRing } from '@/design-system/components';
+import AnimatedNavigationModal from '@/components/AnimatedNavigationModal';
 
-const { width: screenWidth } = Dimensions.get('window');
-
-interface WeeklyData {
-  day: string;
-  sugar_points: number;
-  blocks: number;
-  foods_count: number;
-}
-
-interface ProgressStats {
-  total_entries: number;
-  avg_daily_sugar_points: number;
-  best_day_sugar_points: number;
-  weekly_trend: 'up' | 'down' | 'stable';
-  favorite_meal_type: string;
-  top_foods: any[];
-}
+const navigationItems = [
+  { key: 'log_food', title: 'Log Food', icon: 'restaurant-outline', route: '/(modals)/add-entry', description: 'Add meal manually' },
+  { key: 'scan_food', title: 'Scan Food', icon: 'camera-outline', route: '/(tabs)/scanner', description: 'Camera recognition' },
+  { key: 'search_food', title: 'Search Foods', icon: 'search-outline', route: '/(tabs)/search', description: 'Browse database' },
+  { key: 'ai_coach', title: 'AI Coach', icon: 'chatbubble-ellipses-outline', route: '/(tabs)/aichat', description: 'Get nutrition advice' },
+  { key: 'home', title: 'Home', icon: 'home-outline', route: '/(tabs)/home', description: 'Back to dashboard' }
+];
 
 export default function ProgressScreen() {
   const { user } = useAuth();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   
-  const [activeTab, setActiveTab] = useState<'week' | 'month'>('week');
-  const [weeklyData, setWeeklyData] = useState<WeeklyData[]>([]);
   const [todayData, setTodayData] = useState<any>(null);
-  const [stats, setStats] = useState<ProgressStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showNavigation, setShowNavigation] = useState(false);
 
   useEffect(() => {
     fetchProgressData();
-  }, [activeTab]);
+  }, []);
 
   const fetchProgressData = async () => {
     setLoading(true);
     try {
-      // Fetch today's data
-      const todayResponse = await apiClient.get('/food/entries/today');
-      setTodayData(todayResponse.data);
-      
-      // Mock weekly data (in real app, this would come from API)
-      const mockWeeklyData: WeeklyData[] = [
-        { day: 'Mon', sugar_points: 45, blocks: 8, foods_count: 5 },
-        { day: 'Tue', sugar_points: 52, blocks: 9, foods_count: 6 },
-        { day: 'Wed', sugar_points: 38, blocks: 6, foods_count: 4 },
-        { day: 'Thu', sugar_points: 61, blocks: 10, foods_count: 7 },
-        { day: 'Fri', sugar_points: 43, blocks: 7, foods_count: 5 },
-        { day: 'Sat', sugar_points: 67, blocks: 11, foods_count: 8 },
-        { day: 'Sun', sugar_points: todayData?.total_sugar_points || 0, blocks: todayData?.total_sugar_point_blocks || 0, foods_count: todayData?.entries?.length || 0 },
-      ];
-      
-      setWeeklyData(mockWeeklyData);
-      
-      // Mock stats
-      const avgSugarPoints = mockWeeklyData.reduce((sum, day) => sum + day.sugar_points, 0) / 7;
-      setStats({
-        total_entries: 35,
-        avg_daily_sugar_points: Math.round(avgSugarPoints),
-        best_day_sugar_points: Math.min(...mockWeeklyData.map(d => d.sugar_points)),
-        weekly_trend: avgSugarPoints > 50 ? 'up' : 'down',
-        favorite_meal_type: 'Lunch',
-        top_foods: todayData?.entries?.slice(0, 3) || [],
-      });
-      
+      const response = await apiClient.get('/food/entries/today');
+      setTodayData(response.data);
     } catch (error) {
       console.error('Error fetching progress data:', error);
-      Alert.alert('Error', 'Failed to load progress data');
     } finally {
       setLoading(false);
     }
   };
 
-  const renderWeeklyChart = () => {
-    const maxSugarPoints = Math.max(...weeklyData.map(d => d.sugar_points), 100);
-    
-    return (
-      <Card variant="elevated" style={styles.chartCard}>
-        <Text style={styles.chartTitle}>Weekly SugarPoints</Text>
-        
-        <View style={styles.chart}>
-          {weeklyData.map((day, index) => {
-            const height = (day.sugar_points / maxSugarPoints) * 120;
-            const isToday = index === weeklyData.length - 1;
-            
-            return (
-              <View key={day.day} style={styles.chartBar}>
-                <View 
-                  style={[
-                    styles.bar, 
-                    { 
-                      height: Math.max(height, 4),
-                      backgroundColor: isToday ? colors.primary[400] : colors.primary[200]
-                    }
-                  ]} 
-                />
-                <Text style={styles.barValue}>{day.sugar_points}</Text>
-                <Text style={[styles.barLabel, isToday && styles.todayLabel]}>
-                  {day.day}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-      </Card>
-    );
-  };
-
-  const renderStatsGrid = () => (
-    <View style={styles.statsGrid}>
-      <Card variant="outlined" style={styles.statCard}>
-        <Text style={styles.statValue}>{stats?.avg_daily_sugar_points || 0}</Text>
-        <Text style={styles.statLabel}>Avg Daily SugarPoints</Text>
-        <View style={styles.statIcon}>
-          <Ionicons name="trending-down-outline" size={16} color={colors.success[400]} />
-        </View>
-      </Card>
-      
-      <Card variant="outlined" style={styles.statCard}>
-        <Text style={styles.statValue}>{stats?.best_day_sugar_points || 0}</Text>
-        <Text style={styles.statLabel}>Best Day</Text>
-        <View style={styles.statIcon}>
-          <Ionicons name="trophy-outline" size={16} color={colors.warning[400]} />
-        </View>
-      </Card>
-      
-      <Card variant="outlined" style={styles.statCard}>
-        <Text style={styles.statValue}>{stats?.total_entries || 0}</Text>
-        <Text style={styles.statLabel}>Total Foods</Text>
-        <View style={styles.statIcon}>
-          <Ionicons name="restaurant-outline" size={16} color={colors.primary[400]} />
-        </View>
-      </Card>
-      
-      <Card variant="outlined" style={styles.statCard}>
-        <Text style={styles.statValue}>{stats?.favorite_meal_type || 'N/A'}</Text>
-        <Text style={styles.statLabel}>Top Meal</Text>
-        <View style={styles.statIcon}>
-          <Ionicons name="time-outline" size={16} color={colors.neutral[400]} />
-        </View>
-      </Card>
-    </View>
-  );
-
-  const getTrendIcon = () => {
-    switch (stats?.weekly_trend) {
-      case 'up': return { name: 'trending-up', color: colors.error[400] };
-      case 'down': return { name: 'trending-down', color: colors.success[400] };
-      default: return { name: 'remove', color: colors.neutral[400] };
-    }
-  };
-
-  const getTrendMessage = () => {
-    switch (stats?.weekly_trend) {
-      case 'up': return 'SugarPoints trending higher this week. Consider reducing portions.';
-      case 'down': return 'Great job! SugarPoints trending lower this week.';
-      default: return 'SugarPoints intake has been stable this week.';
-    }
+  const handleNavigationPress = (route: string) => {
+    setShowNavigation(false);
+    setTimeout(() => router.push(route), 100);
   };
 
   if (loading) {
     return (
       <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
-        <ProgressRing progress={50} size={60} />
-        <Text style={styles.loadingText}>Loading your progress...</Text>
+        <Text style={styles.loadingText}>Loading progress...</Text>
       </View>
     );
   }
 
-  const trendIcon = getTrendIcon();
+  const weeklyData = [
+    { day: 'Mon', sugar_points: 45 },
+    { day: 'Tue', sugar_points: 52 },
+    { day: 'Wed', sugar_points: 38 },
+    { day: 'Thu', sugar_points: 61 },
+    { day: 'Fri', sugar_points: 43 },
+    { day: 'Sat', sugar_points: 67 },
+    { day: 'Sun', sugar_points: todayData?.total_sugar_points || 0 },
+  ];
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}>
-        
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Your Progress</Text>
-          <Text style={styles.subtitle}>Track your SugarPoints journey</Text>
-        </View>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#000000" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Progress</Text>
+        <View style={styles.headerSpacer} />
+      </View>
 
-        {/* Period Tabs */}
-        <View style={styles.tabs}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'week' && styles.activeTab]}
-            onPress={() => setActiveTab('week')}>
-            <Text style={[styles.tabText, activeTab === 'week' && styles.activeTabText]}>
-              This Week
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'month' && styles.activeTab]}
-            onPress={() => setActiveTab('month')}>
-            <Text style={[styles.tabText, activeTab === 'month' && styles.activeTabText]}>
-              This Month
-            </Text>
-          </TouchableOpacity>
-        </View>
-
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Today's Summary */}
-        <Card variant="elevated" style={styles.todayCard}>
-          <View style={styles.todayHeader}>
-            <Text style={styles.todayTitle}>Today's Summary</Text>
-            <ProgressRing
-              progress={Math.min((todayData?.total_sugar_points || 0) / 120 * 100, 100)}
-              size={60}
-              strokeWidth={6}>
-              <Text style={styles.todayRingText}>
-                {todayData?.total_sugar_points || 0}
-              </Text>
-            </ProgressRing>
-          </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Today</Text>
           
-          <View style={styles.todayStats}>
-            <View style={styles.todayStat}>
-              <Text style={styles.todayStatValue}>{todayData?.total_sugar_points || 0}</Text>
-              <Text style={styles.todayStatLabel}>SugarPoints</Text>
-            </View>
-            <View style={styles.todayStat}>
-              <Text style={styles.todayStatValue}>{todayData?.total_sugar_point_blocks || 0}</Text>
-              <Text style={styles.todayStatLabel}>Blocks</Text>
-            </View>
-            <View style={styles.todayStat}>
-              <Text style={styles.todayStatValue}>{todayData?.entries?.length || 0}</Text>
-              <Text style={styles.todayStatLabel}>Foods</Text>
+          <View style={styles.todayCard}>
+            <View style={styles.todayStats}>
+              <View style={styles.todayStat}>
+                <Text style={styles.todayNumber}>{todayData?.total_sugar_points || 0}</Text>
+                <Text style={styles.todayLabel}>SugarPoints</Text>
+              </View>
+              
+              <View style={styles.todayStat}>
+                <Text style={styles.todayNumber}>{todayData?.entries?.length || 0}</Text>
+                <Text style={styles.todayLabel}>Foods</Text>
+              </View>
+              
+              <View style={styles.todayStat}>
+                <Text style={styles.todayNumber}>{todayData?.total_sugar_point_blocks || 0}</Text>
+                <Text style={styles.todayLabel}>Blocks</Text>
+              </View>
             </View>
           </View>
-        </Card>
+        </View>
 
         {/* Weekly Chart */}
-        {renderWeeklyChart()}
-
-        {/* Stats Grid */}
-        {renderStatsGrid()}
-
-        {/* Insights */}
-        <Card variant="outlined" style={styles.insightsCard}>
-          <View style={styles.insightsHeader}>
-            <Ionicons name={trendIcon.name as any} size={24} color={trendIcon.color} />
-            <Text style={styles.insightsTitle}>Weekly Insights</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>This Week</Text>
+          
+          <View style={styles.chartCard}>
+            <View style={styles.chart}>
+              {weeklyData.map((day, index) => {
+                const maxPoints = Math.max(...weeklyData.map(d => d.sugar_points), 80);
+                const height = (day.sugar_points / maxPoints) * 100;
+                const isToday = index === weeklyData.length - 1;
+                
+                return (
+                  <View key={day.day} style={styles.chartBar}>
+                    <View 
+                      style={[
+                        styles.bar, 
+                        { 
+                          height: Math.max(height, 4),
+                          backgroundColor: isToday ? '#4A90E2' : '#e0e0e0'
+                        }
+                      ]} 
+                    />
+                    <Text style={styles.barValue}>{day.sugar_points}</Text>
+                    <Text style={[styles.barLabel, isToday && styles.todayBarLabel]}>
+                      {day.day}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
           </View>
-          <Text style={styles.insightsText}>
-            {getTrendMessage()}
-          </Text>
-        </Card>
+        </View>
 
         {/* Recent Foods */}
-        {stats?.top_foods && stats.top_foods.length > 0 && (
-          <View style={styles.recentSection}>
-            <Text style={styles.sectionTitle}>Recent Foods</Text>
-            {stats.top_foods.map((entry) => (
-              <FoodEntryCard
-                key={entry.id}
-                food={{
-                  id: entry.id,
-                  name: entry.name,
-                  sugar_points: entry.sugar_points || 0,
-                  sugar_point_blocks: entry.sugar_point_blocks || 0,
-                  carbs_per_100g: entry.carbs_per_100g || 0,
-                  fat_per_100g: entry.fat_per_100g || 0,
-                  protein_per_100g: entry.protein_per_100g || 0,
-                  portion_size: entry.portion_size,
-                  meal_type: entry.meal_type,
-                }}
-                showDetails={false}
-              />
+        {todayData?.entries && todayData.entries.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Recent foods</Text>
+            
+            {todayData.entries.slice(0, 3).map((entry: any) => (
+              <View key={entry.id} style={styles.foodItem}>
+                <View style={styles.foodInfo}>
+                  <Text style={styles.foodName}>{entry.name}</Text>
+                  <Text style={styles.foodDetails}>
+                    {entry.portion_size}g • {entry.meal_type || 'snack'}
+                  </Text>
+                </View>
+                <View style={styles.foodSugarPoints}>
+                  <Text style={styles.foodPoints}>{entry.sugar_points || 0}</Text>
+                  <Text style={styles.foodPointsLabel}>SP</Text>
+                </View>
+              </View>
             ))}
           </View>
         )}
       </ScrollView>
+
+      {/* Floating Plus Button */}
+      <TouchableOpacity
+        style={[styles.floatingButton, { bottom: insets.bottom + 24 }]}
+        onPress={() => setShowNavigation(true)}>
+        <Ionicons name="add" size={28} color="#ffffff" />
+      </TouchableOpacity>
+
+      {/* Navigation Modal */}
+      <AnimatedNavigationModal
+        visible={showNavigation}
+        onClose={() => setShowNavigation(false)}
+        onNavigate={handleNavigationPress}
+        items={navigationItems}
+      />
     </View>
   );
 }
@@ -294,103 +184,72 @@ export default function ProgressScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#ffffff',
   },
 
   loadingContainer: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   loadingText: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-    marginTop: spacing.lg,
+    fontSize: 16,
+    color: '#666666',
+  },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+
+  backButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 22,
+  },
+
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    flex: 1,
+    textAlign: 'center',
+  },
+
+  headerSpacer: {
+    width: 44,
   },
 
   scrollView: {
     flex: 1,
   },
 
-  content: {
-    padding: layout.screenPadding,
-    paddingBottom: spacing.huge,
+  section: {
+    paddingHorizontal: 24,
+    marginBottom: 32,
   },
 
-  // Header
-  header: {
-    marginBottom: spacing.xl,
-  },
-
-  title: {
-    ...typography.headlineLarge,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-
-  subtitle: {
-    ...typography.bodyLarge,
-    color: colors.text.secondary,
-  },
-
-  // Period Tabs
-  tabs: {
-    flexDirection: 'row',
-    backgroundColor: colors.surfaceSecondary,
-    borderRadius: borderRadius.md,
-    padding: spacing.xs,
-    marginBottom: spacing.xl,
-  },
-
-  tab: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-    borderRadius: borderRadius.sm,
-  },
-
-  activeTab: {
-    backgroundColor: colors.surface,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-
-  tabText: {
-    ...typography.labelLarge,
-    color: colors.text.tertiary,
-  },
-
-  activeTabText: {
-    color: colors.text.primary,
+  sectionTitle: {
+    fontSize: 20,
     fontWeight: '600',
+    color: '#000000',
+    marginBottom: 16,
   },
 
   // Today Card
   todayCard: {
-    marginBottom: spacing.xl,
-  },
-
-  todayHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-
-  todayTitle: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
-  },
-
-  todayRingText: {
-    ...typography.titleMedium,
-    color: colors.primary[400],
-    fontWeight: '700',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 20,
   },
 
   todayStats: {
@@ -402,37 +261,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  todayStatValue: {
-    ...typography.titleLarge,
-    color: colors.text.primary,
+  todayNumber: {
+    fontSize: 28,
     fontWeight: '700',
+    color: '#000000',
+    marginBottom: 4,
   },
 
-  todayStatLabel: {
-    ...typography.labelMedium,
-    color: colors.text.secondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  todayLabel: {
+    fontSize: 14,
+    color: '#666666',
   },
 
   // Chart
   chartCard: {
-    marginBottom: spacing.xl,
-  },
-
-  chartTitle: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
-    marginBottom: spacing.lg,
-    textAlign: 'center',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 20,
   },
 
   chart: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'flex-end',
-    height: 140,
-    paddingHorizontal: spacing.sm,
+    height: 120,
   },
 
   chartBar: {
@@ -441,94 +293,85 @@ const styles = StyleSheet.create({
   },
 
   bar: {
-    width: 24,
-    backgroundColor: colors.primary[200],
-    borderRadius: 2,
-    marginBottom: spacing.sm,
+    width: 20,
+    borderRadius: 10,
+    marginBottom: 8,
   },
 
   barValue: {
-    ...typography.labelSmall,
-    color: colors.text.secondary,
-    marginBottom: spacing.xs,
+    fontSize: 12,
+    color: '#666666',
+    marginBottom: 4,
   },
 
   barLabel: {
-    ...typography.labelSmall,
-    color: colors.text.tertiary,
+    fontSize: 12,
+    color: '#999999',
   },
 
-  todayLabel: {
-    color: colors.primary[400],
+  todayBarLabel: {
+    color: '#4A90E2',
     fontWeight: '600',
   },
 
-  // Stats Grid
-  statsGrid: {
+  // Food Items
+  foodItem: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-    marginBottom: spacing.xl,
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
 
-  statCard: {
+  foodInfo: {
     flex: 1,
-    minWidth: '47%',
-    alignItems: 'center',
-    padding: spacing.lg,
-    position: 'relative',
   },
 
-  statValue: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
+  foodName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 2,
+  },
+
+  foodDetails: {
+    fontSize: 14,
+    color: '#666666',
+  },
+
+  foodSugarPoints: {
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 12,
+    padding: 8,
+    minWidth: 48,
+  },
+
+  foodPoints: {
+    fontSize: 16,
     fontWeight: '700',
-    marginBottom: spacing.xs,
+    color: '#000000',
   },
 
-  statLabel: {
-    ...typography.labelMedium,
-    color: colors.text.secondary,
-    textAlign: 'center',
+  foodPointsLabel: {
+    fontSize: 10,
+    color: '#666666',
   },
 
-  statIcon: {
+  // Floating Button
+  floatingButton: {
     position: 'absolute',
-    top: spacing.sm,
-    right: spacing.sm,
-  },
-
-  // Insights
-  insightsCard: {
-    marginBottom: spacing.xl,
-  },
-
-  insightsHeader: {
-    flexDirection: 'row',
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#000000',
     alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-
-  insightsTitle: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
-    marginLeft: spacing.md,
-  },
-
-  insightsText: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-    lineHeight: 22,
-  },
-
-  // Recent Section
-  recentSection: {
-    marginBottom: spacing.xl,
-  },
-
-  sectionTitle: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
-    marginBottom: spacing.lg,
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
