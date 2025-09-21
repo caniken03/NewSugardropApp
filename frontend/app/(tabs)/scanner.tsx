@@ -7,39 +7,33 @@ import {
   Alert,
   Image,
   ScrollView,
-  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/services/api';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { colors, typography, spacing, layout, touchTargets, borderRadius } from '@/design-system';
-import { Button, Card, FoodEntryCard } from '@/design-system/components';
+import AnimatedNavigationModal from '@/components/AnimatedNavigationModal';
 
-const { width: screenWidth } = Dimensions.get('window');
-
-interface RecognitionResult {
-  id: string;
-  name: string;
-  confidence: number;
-  carbs_per_100g: number;
-  fat_per_100g: number;
-  protein_per_100g: number;
-  estimated_weight: number;
-  category: string;
-}
+const navigationItems = [
+  { key: 'log_food', title: 'Log Food', icon: 'restaurant-outline', route: '/(modals)/add-entry', description: 'Add meal manually' },
+  { key: 'search_food', title: 'Search Foods', icon: 'search-outline', route: '/(tabs)/search', description: 'Browse database' },
+  { key: 'ai_coach', title: 'AI Coach', icon: 'chatbubble-ellipses-outline', route: '/(tabs)/aichat', description: 'Get nutrition advice' },
+  { key: 'progress', title: 'Progress', icon: 'analytics-outline', route: '/(tabs)/progress', description: 'View your stats' },
+  { key: 'home', title: 'Home', icon: 'home-outline', route: '/(tabs)/home', description: 'Back to dashboard' }
+];
 
 export default function ScannerScreen() {
   const { user } = useAuth();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [recognitionResults, setRecognitionResults] = useState<RecognitionResult[]>([]);
+  const [recognitionResults, setRecognitionResults] = useState<any[]>([]);
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+  const [showNavigation, setShowNavigation] = useState(false);
 
   useEffect(() => {
     checkCameraPermission();
@@ -126,7 +120,7 @@ export default function ScannerScreen() {
       if (results.length === 0) {
         Alert.alert(
           'No Food Detected',
-          'We couldn\'t identify any food in this image. Try taking another photo with better lighting or add the food manually.',
+          'We couldn\'t identify any food in this image. Try taking another photo with better lighting.',
           [
             { text: 'Try Again', onPress: () => setImage(null) },
             { text: 'Add Manually', onPress: () => router.push('/(modals)/add-entry') },
@@ -137,7 +131,7 @@ export default function ScannerScreen() {
       console.error('Error recognizing food:', error);
       Alert.alert(
         'Recognition Failed',
-        'Food recognition service is temporarily unavailable. You can add foods manually.',
+        'Food recognition service is temporarily unavailable.',
         [
           { text: 'Try Again', onPress: () => setImage(null) },
           { text: 'Add Manually', onPress: () => router.push('/(modals)/add-entry') },
@@ -148,189 +142,176 @@ export default function ScannerScreen() {
     }
   };
 
-  const handleFoodSelect = (food: RecognitionResult) => {
-    // Calculate SugarPoints from carbs
-    const sugarPoints = Math.round(food.carbs_per_100g);
-    const sugarPointBlocks = Math.round(sugarPoints / 6);
+  const handleNavigationPress = (route: string) => {
+    setShowNavigation(false);
+    setTimeout(() => router.push(route), 100);
+  };
+
+  const handleFoodSelect = (food: any) => {
+    const sugarPoints = Math.round(food.carbs_per_100g || 0);
     
-    // Navigate to add entry with pre-filled data
     router.push({
       pathname: '/(modals)/add-entry',
       params: {
         foodName: food.name,
-        carbs_per_100g: food.carbs_per_100g.toString(),
-        fat_per_100g: food.fat_per_100g.toString(),
-        protein_per_100g: food.protein_per_100g.toString(),
-        portionSize: food.estimated_weight.toString(),
+        carbs_per_100g: food.carbs_per_100g?.toString() || '0',
+        fat_per_100g: food.fat_per_100g?.toString() || '0',
+        protein_per_100g: food.protein_per_100g?.toString() || '0',
+        portionSize: food.estimated_weight?.toString() || '100',
         source: 'scan',
       },
     });
   };
 
-  const renderCameraInterface = () => (
-    <View style={styles.cameraInterface}>
-      <Card variant="elevated" style={styles.instructionCard}>
-        <Ionicons name="camera-outline" size={64} color={colors.primary[400]} />
-        <Text style={styles.instructionTitle}>Scan Your Food</Text>
-        <Text style={styles.instructionText}>
-          Take a photo of your food and we'll identify it automatically using AI
-        </Text>
-        
-        <View style={styles.cameraActions}>
-          <Button
-            title="Take Photo"
-            onPress={takePicture}
-            icon="camera"
-            size="large"
-            style={styles.cameraButton}
-          />
-          
-          <Button
-            title="Choose from Gallery"
-            variant="outline"
-            onPress={selectFromGallery}
-            icon="images"
-            size="large"
-            style={styles.galleryButton}
-          />
-        </View>
-      </Card>
-
-      {/* Tips Card */}
-      <Card variant="outlined" style={styles.tipsCard}>
-        <Text style={styles.tipsTitle}>📸 Photo Tips</Text>
-        <View style={styles.tipsList}>
-          <View style={styles.tipItem}>
-            <Ionicons name="sunny-outline" size={16} color={colors.primary[400]} />
-            <Text style={styles.tipText}>Use good lighting</Text>
-          </View>
-          <View style={styles.tipItem}>
-            <Ionicons name="resize-outline" size={16} color={colors.primary[400]} />
-            <Text style={styles.tipText}>Fill the frame with food</Text>
-          </View>
-          <View style={styles.tipItem}>
-            <Ionicons name="eye-outline" size={16} color={colors.primary[400]} />
-            <Text style={styles.tipText}>Keep food clearly visible</Text>
-          </View>
-        </View>
-      </Card>
-    </View>
-  );
-
-  const renderImagePreview = () => (
-    <View style={styles.imagePreview}>
-      <Card variant="outlined" style={styles.imageCard}>
-        <Image source={{ uri: image }} style={styles.previewImage} />
-        <View style={styles.imageActions}>
-          <Button
-            title="Retake"
-            variant="outline"
-            onPress={() => {
-              setImage(null);
-              setRecognitionResults([]);
-            }}
-            icon="camera"
-            style={styles.retakeButton}
-          />
-          
-          <Button
-            title="Add Manually"
-            variant="ghost"
-            onPress={() => router.push('/(modals)/add-entry')}
-            icon="create"
-            style={styles.manualButton}
-          />
-        </View>
-      </Card>
-    </View>
-  );
-
-  const renderRecognitionResults = () => (
-    <View style={styles.resultsContainer}>
-      <Text style={styles.resultsTitle}>
-        {recognitionResults.length > 0 ? 'Foods Detected' : 'Processing...'}
-      </Text>
-      
-      {recognitionResults.length > 0 ? (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {recognitionResults.map((food) => {
-            const sugarPoints = Math.round(food.carbs_per_100g);
-            const sugarPointBlocks = Math.round(sugarPoints / 6);
-            
-            return (
-              <FoodEntryCard
-                key={food.id}
-                food={{
-                  id: food.id,
-                  name: food.name,
-                  sugar_points: sugarPoints,
-                  sugar_point_blocks: sugarPointBlocks,
-                  carbs_per_100g: food.carbs_per_100g,
-                  fat_per_100g: food.fat_per_100g,
-                  protein_per_100g: food.protein_per_100g,
-                  portion_size: food.estimated_weight,
-                  source: 'scan',
-                  confidence: food.confidence,
-                }}
-                onPress={() => handleFoodSelect(food)}
-                accessibilityLabel={`Add ${food.name} to food log`}
-              />
-            );
-          })}
-        </ScrollView>
-      ) : loading ? (
-        <View style={styles.loadingContainer}>
-          <LoadingSpinner />
-          <Text style={styles.loadingText}>
-            Analyzing your food with AI...
-          </Text>
-        </View>
-      ) : null}
-    </View>
-  );
-
   if (permissionGranted === false) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <View style={styles.permissionContainer}>
-          <Card variant="outlined" style={styles.permissionCard}>
-            <Ionicons name="camera-outline" size={64} color={colors.neutral[400]} />
-            <Text style={styles.permissionTitle}>Camera Access Required</Text>
-            <Text style={styles.permissionText}>
-              SugarDrop needs camera access to scan and identify foods automatically.
-            </Text>
-            <Button
-              title="Enable Camera"
-              onPress={requestPermission}
-              icon="camera"
-              style={styles.permissionButton}
-            />
-          </Card>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color="#000000" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Food Scanner</Text>
+          <View style={styles.headerSpacer} />
         </View>
+
+        <View style={styles.permissionContainer}>
+          <Ionicons name="camera-outline" size={64} color="#cccccc" />
+          <Text style={styles.permissionTitle}>Camera Access Required</Text>
+          <Text style={styles.permissionText}>
+            SugarDrop needs camera access to scan and identify foods automatically.
+          </Text>
+          <TouchableOpacity style={styles.enableButton} onPress={requestPermission}>
+            <Text style={styles.enableButtonText}>Enable Camera</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Floating Plus Button */}
+        <TouchableOpacity
+          style={[styles.floatingButton, { bottom: insets.bottom + 24 }]}
+          onPress={() => setShowNavigation(true)}>
+          <Ionicons name="add" size={28} color="#ffffff" />
+        </TouchableOpacity>
+
+        <AnimatedNavigationModal
+          visible={showNavigation}
+          onClose={() => setShowNavigation(false)}
+          onNavigate={handleNavigationPress}
+          items={navigationItems}
+        />
       </View>
     );
   }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}>
-        
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Food Scanner</Text>
-          <Text style={styles.subtitle}>
-            AI-powered food recognition for instant SugarPoints tracking
-          </Text>
-        </View>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#000000" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Food Scanner</Text>
+        <View style={styles.headerSpacer} />
+      </View>
 
-        {/* Main Content */}
-        {!image && renderCameraInterface()}
-        {image && !loading && recognitionResults.length === 0 && renderImagePreview()}
-        {image && (loading || recognitionResults.length > 0) && renderRecognitionResults()}
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {!image ? (
+          // Camera Interface
+          <View style={styles.cameraSection}>
+            <View style={styles.instructionCard}>
+              <Ionicons name="camera-outline" size={64} color="#4A90E2" />
+              <Text style={styles.instructionTitle}>Scan Your Food</Text>
+              <Text style={styles.instructionText}>
+                Take a photo of your food and we'll identify it automatically using AI
+              </Text>
+              
+              <View style={styles.cameraActions}>
+                <TouchableOpacity style={styles.cameraButton} onPress={takePicture}>
+                  <Ionicons name="camera" size={24} color="#ffffff" />
+                  <Text style={styles.cameraButtonText}>Take Photo</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={styles.galleryButton} onPress={selectFromGallery}>
+                  <Ionicons name="images-outline" size={24} color="#4A90E2" />
+                  <Text style={styles.galleryButtonText}>Choose from Gallery</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Tips */}
+            <View style={styles.tipsCard}>
+              <Text style={styles.tipsTitle}>📸 Photo Tips</Text>
+              <View style={styles.tipsList}>
+                <Text style={styles.tipText}>• Use good lighting</Text>
+                <Text style={styles.tipText}>• Fill the frame with food</Text>
+                <Text style={styles.tipText}>• Keep food clearly visible</Text>
+              </View>
+            </View>
+          </View>
+        ) : (
+          // Results Section
+          <View style={styles.resultsSection}>
+            <View style={styles.imagePreview}>
+              <Image source={{ uri: image }} style={styles.previewImage} />
+              <TouchableOpacity
+                style={styles.retakeButton}
+                onPress={() => {
+                  setImage(null);
+                  setRecognitionResults([]);
+                }}>
+                <Text style={styles.retakeText}>Retake Photo</Text>
+              </TouchableOpacity>
+            </View>
+
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingText}>Analyzing your food with AI...</Text>
+              </View>
+            ) : recognitionResults.length > 0 ? (
+              <View style={styles.resultsContainer}>
+                <Text style={styles.resultsTitle}>Foods Detected</Text>
+                
+                {recognitionResults.map((food) => (
+                  <TouchableOpacity
+                    key={food.id}
+                    style={styles.resultItem}
+                    onPress={() => handleFoodSelect(food)}>
+                    <View style={styles.resultInfo}>
+                      <Text style={styles.resultName}>{food.name}</Text>
+                      <Text style={styles.resultDetails}>
+                        {Math.round(food.carbs_per_100g || 0)} SugarPoints • {Math.round((food.confidence || 0) * 100)}% confidence
+                      </Text>
+                    </View>
+                    <View style={styles.resultSugarPoints}>
+                      <Text style={styles.resultPoints}>{Math.round(food.carbs_per_100g || 0)}</Text>
+                      <Text style={styles.resultPointsLabel}>SP</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : null}
+          </View>
+        )}
       </ScrollView>
+
+      {/* Floating Plus Button */}
+      <TouchableOpacity
+        style={[styles.floatingButton, { bottom: insets.bottom + 24 }]}
+        onPress={() => setShowNavigation(true)}>
+        <Ionicons name="add" size={28} color="#ffffff" />
+      </TouchableOpacity>
+
+      {/* Navigation Modal */}
+      <AnimatedNavigationModal
+        visible={showNavigation}
+        onClose={() => setShowNavigation(false)}
+        onNavigate={handleNavigationPress}
+        items={navigationItems}
+      />
     </View>
   );
 }
@@ -338,187 +319,282 @@ export default function ScannerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#ffffff',
+  },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+
+  backButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 22,
+  },
+
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    flex: 1,
+    textAlign: 'center',
+  },
+
+  headerSpacer: {
+    width: 44,
   },
 
   scrollView: {
     flex: 1,
   },
 
-  content: {
-    padding: layout.screenPadding,
-    paddingBottom: spacing.huge,
-  },
-
-  // Header
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-
-  title: {
-    ...typography.headlineLarge,
-    color: colors.text.primary,
-    marginBottom: spacing.sm,
-  },
-
-  subtitle: {
-    ...typography.bodyLarge,
-    color: colors.text.secondary,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-
   // Permission Screen
   permissionContainer: {
     flex: 1,
-    justifyContent: 'center',
-    padding: layout.screenPadding,
-  },
-
-  permissionCard: {
     alignItems: 'center',
-    padding: spacing.xxl,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
   },
 
   permissionTitle: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#000000',
+    marginTop: 24,
+    marginBottom: 8,
     textAlign: 'center',
   },
 
   permissionText: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
+    fontSize: 16,
+    color: '#666666',
     textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: spacing.xl,
+    lineHeight: 24,
+    marginBottom: 32,
   },
 
-  permissionButton: {
-    minWidth: 200,
+  enableButton: {
+    backgroundColor: '#000000',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 24,
   },
 
-  // Camera Interface
-  cameraInterface: {
-    gap: spacing.xl,
+  enableButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // Camera Section
+  cameraSection: {
+    padding: 24,
   },
 
   instructionCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 32,
     alignItems: 'center',
-    padding: spacing.xxl,
-    backgroundColor: colors.primary[50],
-    borderColor: colors.primary[100],
+    marginBottom: 24,
   },
 
   instructionTitle: {
-    ...typography.headlineMedium,
-    color: colors.text.primary,
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#000000',
+    marginTop: 16,
+    marginBottom: 8,
   },
 
   instructionText: {
-    ...typography.bodyLarge,
-    color: colors.text.secondary,
+    fontSize: 16,
+    color: '#666666',
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: spacing.xl,
+    marginBottom: 32,
   },
 
   cameraActions: {
-    gap: spacing.lg,
-    alignSelf: 'stretch',
+    gap: 16,
+    width: '100%',
   },
 
   cameraButton: {
-    minHeight: touchTargets.large,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000000',
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+
+  cameraButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 
   galleryButton: {
-    minHeight: touchTargets.large,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#4A90E2',
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
   },
 
-  // Tips Card
+  galleryButtonText: {
+    color: '#4A90E2',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // Tips
   tipsCard: {
-    backgroundColor: colors.neutral[50],
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 20,
   },
 
   tipsTitle: {
-    ...typography.titleLarge,
-    color: colors.text.primary,
-    marginBottom: spacing.lg,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 16,
   },
 
   tipsList: {
-    gap: spacing.md,
-  },
-
-  tipItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
+    gap: 8,
   },
 
   tipText: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-    flex: 1,
+    fontSize: 14,
+    color: '#666666',
   },
 
-  // Image Preview
+  // Results Section
+  resultsSection: {
+    padding: 24,
+  },
+
   imagePreview: {
-    gap: spacing.lg,
-  },
-
-  imageCard: {
-    padding: 0,
-    overflow: 'hidden',
+    alignItems: 'center',
+    marginBottom: 24,
   },
 
   previewImage: {
-    width: '100%',
-    height: screenWidth - 32, // Square image
-    resizeMode: 'cover',
-  },
-
-  imageActions: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    padding: spacing.lg,
+    width: 200,
+    height: 200,
+    borderRadius: 16,
+    marginBottom: 16,
   },
 
   retakeButton: {
-    flex: 1,
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
   },
 
-  manualButton: {
-    flex: 1,
-  },
-
-  // Recognition Results
-  resultsContainer: {
-    gap: spacing.lg,
-  },
-
-  resultsTitle: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
-    textAlign: 'center',
+  retakeText: {
+    color: '#4A90E2',
+    fontSize: 14,
+    fontWeight: '600',
   },
 
   loadingContainer: {
     alignItems: 'center',
-    padding: spacing.xxl,
+    padding: 32,
   },
 
   loadingText: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-    marginTop: spacing.lg,
-    textAlign: 'center',
+    fontSize: 16,
+    color: '#666666',
+  },
+
+  resultsContainer: {
+    marginTop: 16,
+  },
+
+  resultsTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 16,
+  },
+
+  resultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+
+  resultInfo: {
+    flex: 1,
+  },
+
+  resultName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 2,
+  },
+
+  resultDetails: {
+    fontSize: 14,
+    color: '#666666',
+  },
+
+  resultSugarPoints: {
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 8,
+    minWidth: 48,
+  },
+
+  resultPoints: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000000',
+  },
+
+  resultPointsLabel: {
+    fontSize: 10,
+    color: '#666666',
+  },
+
+  // Floating Button
+  floatingButton: {
+    position: 'absolute',
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
