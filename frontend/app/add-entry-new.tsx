@@ -28,7 +28,7 @@ export default function AddEntryModal() {
   
   const [formData, setFormData] = useState({
     name: (params.foodName as string) || '',
-    carbsPer100g: (params.carbs_per_100g as string) || (params.sugarPer100g as string) || '',
+    sugarpointsPer100g: (params.carbs_per_100g as string) || (params.sugarPer100g as string) || '',
     fatPer100g: (params.fat_per_100g as string) || '',
     proteinPer100g: (params.protein_per_100g as string) || '',
     portionSize: '100',
@@ -41,15 +41,10 @@ export default function AddEntryModal() {
   };
 
   const calculateSugarPoints = () => {
-    const carbsPer100g = parseFloat(formData.carbsPer100g) || 0;
+    const sugarpointsPer100g = parseFloat(formData.sugarpointsPer100g) || 0;
     const portionSize = parseFloat(formData.portionSize) || 0;
-    const totalCarbs = (carbsPer100g * portionSize) / 100;
-    return Math.round(totalCarbs);
-  };
-
-  const calculateSugarPointBlocks = () => {
-    const sugarPoints = calculateSugarPoints();
-    return Math.round(sugarPoints / 6);
+    const totalSugarPoints = (sugarpointsPer100g * portionSize) / 100;
+    return Math.round(totalSugarPoints);
   };
 
   const calculateTotalFat = () => {
@@ -65,20 +60,20 @@ export default function AddEntryModal() {
   };
 
   const handleSave = async () => {
-    const { name, carbsPer100g, fatPer100g, proteinPer100g, portionSize } = formData;
+    const { name, sugarpointsPer100g, fatPer100g, proteinPer100g, portionSize } = formData;
 
     if (!name.trim()) {
       Alert.alert('Required Field', 'Please enter a food name');
       return;
     }
 
-    const carbsValue = parseFloat(carbsPer100g);
+    const sugarpointsValue = parseFloat(sugarpointsPer100g);
     const fatValue = parseFloat(fatPer100g) || 0;
     const proteinValue = parseFloat(proteinPer100g) || 0;
     const portionValue = parseFloat(portionSize);
 
-    if (isNaN(carbsValue) || carbsValue < 0) {
-      Alert.alert('Invalid Input', 'Please enter a valid carbohydrate content');
+    if (isNaN(sugarpointsValue) || sugarpointsValue < 0) {
+      Alert.alert('Invalid Input', 'Please enter valid SugarPoints content');
       return;
     }
 
@@ -91,7 +86,7 @@ export default function AddEntryModal() {
     try {
       await apiClient.post('/food/entries', {
         name: name.trim(),
-        carbs_per_100g: carbsValue,
+        carbs_per_100g: sugarpointsValue,
         fat_per_100g: fatValue,
         protein_per_100g: proteinValue,
         portion_size: portionValue,
@@ -112,16 +107,7 @@ export default function AddEntryModal() {
     }
   };
 
-  if (loading) {
-    return (
-      <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
-        <LoadingSpinner />
-      </View>
-    );
-  }
-
   const sugarPoints = calculateSugarPoints();
-  const sugarPointBlocks = calculateSugarPointBlocks();
   const totalFat = calculateTotalFat();
   const totalProtein = calculateTotalProtein();
 
