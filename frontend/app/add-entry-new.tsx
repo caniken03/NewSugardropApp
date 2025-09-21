@@ -265,42 +265,37 @@ export default function AddEntryModal() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
-  },
-
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#ffffff',
   },
 
   // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: layout.screenPadding,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border.light,
-    backgroundColor: colors.surface,
+    borderBottomColor: '#f0f0f0',
   },
 
-  closeButton: {
-    width: touchTargets.minimum,
-    height: touchTargets.minimum,
+  backButton: {
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: borderRadius.sm,
+    borderRadius: 22,
   },
 
   headerTitle: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    flex: 1,
+    textAlign: 'center',
   },
 
   headerSpacer: {
-    width: touchTargets.minimum,
+    width: 44,
   },
 
   // Content
@@ -308,165 +303,154 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  content: {
-    padding: layout.screenPadding,
-    paddingBottom: spacing.huge,
-  },
-
-  // Sections
   section: {
-    marginBottom: spacing.xxl,
+    paddingHorizontal: 24,
+    marginBottom: 32,
   },
 
-  sectionTitle: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
-    marginBottom: spacing.lg,
-  },
-
-  // Meal Type Selection
-  mealTypeGrid: {
+  row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
+    paddingHorizontal: 24,
+    marginBottom: 32,
+    gap: 16,
   },
 
-  mealTypeButton: {
-    flex: 1,
-    minWidth: '47%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.lg,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-    gap: spacing.sm,
-  },
-
-  activeMealType: {
-    borderColor: colors.primary[400],
-    backgroundColor: colors.primary[50],
-  },
-
-  mealTypeText: {
-    ...typography.labelLarge,
-    color: colors.text.secondary,
-  },
-
-  activeMealTypeText: {
-    color: colors.primary[400],
-    fontWeight: '600',
-  },
-
-  // Form Inputs
-  inputContainer: {
-    marginBottom: spacing.lg,
-  },
-
-  inputRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-
-  inputHalf: {
+  halfSection: {
     flex: 1,
   },
 
   label: {
-    ...typography.labelLarge,
-    color: colors.text.primary,
-    marginBottom: spacing.sm,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 8,
   },
 
   input: {
-    height: touchTargets.comfortable,
-    borderRadius: borderRadius.md,
+    height: 48,
     borderWidth: 1,
-    paddingHorizontal: spacing.lg,
-    backgroundColor: colors.surface,
-    borderColor: colors.border.light,
-    color: colors.text.primary,
+    borderColor: '#e0e0e0',
+    borderRadius: 12,
+    paddingHorizontal: 16,
     fontSize: 16,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    color: '#000000',
+    backgroundColor: '#ffffff',
   },
 
-  helperText: {
-    ...typography.bodySmall,
-    color: colors.text.tertiary,
-    marginTop: spacing.xs,
+  helper: {
+    fontSize: 14,
+    color: '#666666',
+    marginTop: 4,
   },
 
-  // Summary Card
-  summaryCard: {
-    marginBottom: spacing.xxl,
-    backgroundColor: colors.primary[50],
-    borderColor: colors.primary[100],
-  },
-
-  summaryTitle: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
-    marginBottom: spacing.lg,
-    textAlign: 'center',
-  },
-
-  sugarPointsDisplay: {
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-
-  sugarPointsAmount: {
-    ...typography.displayMedium,
-    color: colors.primary[400],
-    fontWeight: '700',
-    marginBottom: spacing.xs,
-  },
-
-  sugarPointsBlocks: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-  },
-
-  nutritionGrid: {
+  // Meal Types
+  mealTypeGrid: {
     flexDirection: 'row',
-    justifyContent: 'center',
     flexWrap: 'wrap',
-    gap: spacing.lg,
+    gap: 12,
   },
 
-  nutritionItem: {
+  mealTypeButton: {
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 24,
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    gap: 8,
   },
 
-  nutritionLabel: {
-    ...typography.labelMedium,
-    color: colors.text.secondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  selectedMealType: {
+    backgroundColor: '#e8f4fd',
+    borderColor: '#4A90E2',
   },
 
-  nutritionValue: {
-    ...typography.titleMedium,
-    color: colors.text.primary,
+  mealTypeText: {
+    fontSize: 14,
+    color: '#666666',
+    fontWeight: '500',
+  },
+
+  selectedMealTypeText: {
+    color: '#4A90E2',
     fontWeight: '600',
   },
 
-  // Actions
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.md,
+  // Summary
+  summarySection: {
+    paddingHorizontal: 24,
+    marginBottom: 32,
   },
 
-  cancelButton: {
-    flex: 1,
+  summaryTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 16,
+  },
+
+  summaryCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+  },
+
+  summaryHeader: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+
+  sugarpointsNumber: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: '#000000',
+    marginBottom: 4,
+  },
+
+  sugarpointsLabel: {
+    fontSize: 16,
+    color: '#666666',
+  },
+
+  summaryDetails: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 16,
+  },
+
+  summaryDetail: {
+    fontSize: 14,
+    color: '#666666',
+  },
+
+  // Footer
+  footer: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    backgroundColor: '#ffffff',
   },
 
   saveButton: {
-    flex: 2,
+    height: 52,
+    backgroundColor: '#000000',
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  saveButtonDisabled: {
+    backgroundColor: '#cccccc',
+  },
+
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
   },
 });
