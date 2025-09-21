@@ -43,6 +43,7 @@ const suggestedQuestions = [
 
 export default function AIChatScreen() {
   const { user } = useAuth();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
   
