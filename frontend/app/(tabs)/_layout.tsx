@@ -6,39 +6,51 @@ export default function TabLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: 'slide_from_right',
+        animation: 'fade',
+        animationDuration: 200,
         contentStyle: {
           backgroundColor: '#ffffff',
         },
+        cardStyle: {
+          backgroundColor: '#ffffff',
+        },
+        cardOverlayEnabled: false,
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
       }}>
       <Stack.Screen
         name="home"
         options={{
           title: 'Home',
+          animationTypeForReplace: 'push',
         }}
       />
       <Stack.Screen
         name="search"
         options={{
           title: 'Search',
+          animation: 'slide_from_right',
         }}
       />
       <Stack.Screen
         name="scanner"
         options={{
           title: 'Scanner',
+          animation: 'slide_from_right',
         }}
       />
       <Stack.Screen
         name="aichat"
         options={{
           title: 'AI Coach',
+          animation: 'slide_from_right',
         }}
       />
       <Stack.Screen
         name="progress"
         options={{
           title: 'Progress',
+          animation: 'slide_from_right',
         }}
       />
     </Stack>
