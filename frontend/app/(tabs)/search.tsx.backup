@@ -16,7 +16,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/services/api';
 import AnimatedNavigationModal from '@/components/AnimatedNavigationModal';
 import { FoodEntryCard, Card, Button } from '@/design-system/components';
-import { colors, typography, spacing, layout, borderRadius, touchTargets } from '@/design-system/tokens';
+import { colors } from '@/design-system/colors';
+import { typography } from '@/design-system/typography';
+import { spacing, layout, borderRadius, touchTargets } from '@/design-system/spacing';
 
 const navigationItems = [
   { key: 'log_food', title: 'Log Food', icon: 'restaurant-outline', route: '/(modals)/add-entry', description: 'Add meal manually' },
@@ -47,6 +49,7 @@ export default function SearchScreen() {
   const [popularFoods, setPopularFoods] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingPopular, setLoadingPopular] = useState(true);
+  const [showNavigation, setShowNavigation] = useState(false);
 
   // Load popular foods on mount
   useEffect(() => {
@@ -85,12 +88,14 @@ export default function SearchScreen() {
     }
   };
 
+  const handleNavigationPress = (route: string) => {
+    setShowNavigation(false);
+    setTimeout(() => router.push(route), 100);
+  };
+
   const handleFoodSelect = (food: FoodItem) => {
-    // Calculate SugarPoints from carbs
     const sugarPoints = Math.round(food.carbs_per_100g);
-    const sugarPointBlocks = Math.round(sugarPoints / 6);
     
-    // Navigate to add entry with pre-filled data
     router.push({
       pathname: '/(modals)/add-entry',
       params: {
@@ -106,25 +111,27 @@ export default function SearchScreen() {
 
   const renderFoodItem = ({ item }: { item: FoodItem }) => {
     const sugarPoints = Math.round(item.carbs_per_100g);
-    const sugarPointBlocks = Math.round(sugarPoints / 6);
     
     return (
-      <FoodEntryCard
-        food={{
-          id: item.id,
-          name: item.name,
-          sugar_points: sugarPoints,
-          sugar_point_blocks: sugarPointBlocks,
-          carbs_per_100g: item.carbs_per_100g,
-          fat_per_100g: item.fat_per_100g,
-          protein_per_100g: item.protein_per_100g,
-          portion_size: 100, // Default portion for search results
-          source: 'search',
-          confidence: item.confidence,
-        }}
-        onPress={() => handleFoodSelect(item)}
-        accessibilityLabel={`Add ${item.name} to food log`}
-      />
+      <TouchableOpacity
+        style={styles.foodItem}
+        onPress={() => handleFoodSelect(item)}>
+        <View style={styles.foodInfo}>
+          <Text style={styles.foodName}>{item.name}</Text>
+          <Text style={styles.foodDetails}>
+            {sugarPoints} SugarPoints per 100g • {item.category}
+          </Text>
+          {item.confidence && (
+            <Text style={styles.foodConfidence}>
+              {Math.round(item.confidence * 100)}% confidence
+            </Text>
+          )}
+        </View>
+        <View style={styles.foodSugarPoints}>
+          <Text style={styles.foodPoints}>{sugarPoints}</Text>
+          <Text style={styles.foodPointsLabel}>SP</Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -154,17 +161,16 @@ export default function SearchScreen() {
         
         <View style={styles.searchContainer}>
           <View style={styles.searchInputContainer}>
-            <Ionicons name="search-outline" size={20} color={colors.text.tertiary} />
+            <Ionicons name="search-outline" size={20} color="#666666" />
             <TextInput
               style={styles.searchInput}
               value={query}
               onChangeText={setQuery}
               placeholder="Search foods (e.g., apple, chicken, rice)"
-              placeholderTextColor={colors.text.tertiary}
+              placeholderTextColor="#999999"
               returnKeyType="search"
               onSubmitEditing={searchFoods}
               autoCorrect={false}
-              accessibilityLabel="Food search input"
             />
             {query.length > 0 && (
               <TouchableOpacity
@@ -172,20 +178,18 @@ export default function SearchScreen() {
                   setQuery('');
                   setResults([]);
                 }}
-                style={styles.clearButton}
-                accessibilityLabel="Clear search">
-                <Ionicons name="close-circle" size={20} color={colors.text.tertiary} />
+                style={styles.clearButton}>
+                <Ionicons name="close-circle" size={20} color="#666666" />
               </TouchableOpacity>
             )}
           </View>
           
-          <Button
-            title="Search"
-            onPress={searchFoods}
-            disabled={!query.trim() || loading}
-            loading={loading}
+          <TouchableOpacity
             style={styles.searchButton}
-          />
+            onPress={searchFoods}
+            disabled={!query.trim() || loading}>
+            <Text style={styles.searchButtonText}>Search</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -205,7 +209,13 @@ export default function SearchScreen() {
             />
           </>
         ) : query && !loading ? (
-          renderEmptyState()
+          <View style={styles.emptyState}>
+            <Ionicons name="search-outline" size={48} color="#cccccc" />
+            <Text style={styles.emptyTitle}>No foods found</Text>
+            <Text style={styles.emptySubtitle}>
+              Try searching for "{query}" with different keywords
+            </Text>
+          </View>
         ) : (
           <>
             <Text style={styles.resultsHeader}>
@@ -213,7 +223,7 @@ export default function SearchScreen() {
             </Text>
             {loadingPopular ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={colors.primary[400]} />
+                <ActivityIndicator size="large" color="#4A90E2" />
               </View>
             ) : (
               <FlatList
@@ -223,52 +233,67 @@ export default function SearchScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.resultsList}
                 ListEmptyComponent={
-                  <Card variant="outlined" style={styles.emptyState}>
-                    <Ionicons name="restaurant-outline" size={48} color={colors.neutral[300]} />
+                  <View style={styles.emptyState}>
+                    <Ionicons name="restaurant-outline" size={48} color="#cccccc" />
                     <Text style={styles.emptyTitle}>No popular foods available</Text>
                     <Text style={styles.emptySubtitle}>
                       Try searching for specific foods to get started
                     </Text>
-                  </Card>
+                  </View>
                 }
               />
             )}
           </>
         )}
       </View>
-    </View>
-  );
-}
 
+      {/* Floating Plus Button */}
+      <TouchableOpacity
+        style={[styles.floatingButton, { bottom: insets.bottom + 24 }]}
+        onPress={() => setShowNavigation(true)}>
+        <Ionicons name="add" size={28} color="#ffffff" />
+      </TouchableOpacity>
+
+      {/* Navigation Modal */}
+      <AnimatedNavigationModal
+        visible={showNavigation}
+        onClose={() => setShowNavigation(false)}
+        onNavigate={handleNavigationPress}
+        items={navigationItems}
+      />
+    </View>
+    </View>
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#ffffff',
   },
 
   // Search Header
   searchHeader: {
-    padding: layout.screenPadding,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border.light,
-    backgroundColor: colors.surface,
+    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#ffffff',
   },
 
   screenTitle: {
-    ...typography.headlineLarge,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 4,
   },
 
   screenSubtitle: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-    marginBottom: spacing.xl,
+    fontSize: 16,
+    color: '#666666',
+    marginBottom: 20,
   },
 
   searchContainer: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: 12,
     alignItems: 'flex-end',
   },
 
@@ -276,76 +301,156 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: '#f8f9fa',
     borderWidth: 1,
-    borderColor: colors.border.light,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.lg,
-    height: touchTargets.comfortable,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 48,
   },
 
   searchInput: {
     flex: 1,
-    marginLeft: spacing.sm,
-    ...typography.bodyMedium,
-    color: colors.text.primary,
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#000000',
   },
 
   clearButton: {
-    padding: spacing.xs,
+    padding: 4,
   },
 
   searchButton: {
     minWidth: 80,
+    backgroundColor: '#000000',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+
+  searchButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 
   // Results
   resultsContainer: {
     flex: 1,
-    padding: layout.screenPadding,
+    paddingHorizontal: 24,
+    paddingTop: 16,
   },
 
   resultsHeader: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
-    marginBottom: spacing.lg,
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 16,
   },
 
   resultsList: {
-    paddingBottom: spacing.huge,
+    paddingBottom: 100,
   },
 
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: spacing.huge,
+    paddingTop: 48,
+  },
+
+  // Food Items
+  foodItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+
+  foodInfo: {
+    flex: 1,
+  },
+
+  foodName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 2,
+  },
+
+  foodDetails: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 2,
+  },
+
+  foodConfidence: {
+    fontSize: 12,
+    color: '#999999',
+    fontStyle: 'italic',
+  },
+
+  foodSugarPoints: {
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 8,
+    minWidth: 48,
+  },
+
+  foodPoints: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000000',
+  },
+
+  foodPointsLabel: {
+    fontSize: 10,
+    color: '#666666',
   },
 
   // Empty State
   emptyState: {
     alignItems: 'center',
-    padding: spacing.xxl,
-    marginTop: spacing.xl,
+    padding: 32,
+    marginTop: 24,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
   },
 
   emptyTitle: {
-    ...typography.headlineSmall,
-    color: colors.text.primary,
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000000',
+    marginTop: 16,
+    marginBottom: 8,
     textAlign: 'center',
   },
 
   emptySubtitle: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
+    fontSize: 16,
+    color: '#666666',
     textAlign: 'center',
     lineHeight: 22,
+  },
+
+  // Floating Button
+  floatingButton: {
+    position: 'absolute',
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
