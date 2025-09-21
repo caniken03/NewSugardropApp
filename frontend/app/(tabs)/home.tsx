@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -13,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/services/api';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { colors, typography, spacing, layout, touchTargets, borderRadius } from '@/design-system';
+import AnimatedNavigationModal from '@/components/AnimatedNavigationModal';
 
 interface TodayData {
   entries: any[];
