@@ -699,6 +699,51 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
 
+  // Weight Goals
+  weightInputRow: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+    marginBottom: spacing.xl,
+  },
+
+  weightInput: {
+    flex: 1,
+    alignItems: 'center',
+  },
+
+  weightUnit: {
+    ...typography.labelMedium,
+    color: colors.text.tertiary,
+    marginTop: spacing.xs,
+    textAlign: 'center',
+  },
+
+  encouragementCard: {
+    backgroundColor: colors.success[50],
+    borderWidth: 2,
+    padding: spacing.xl,
+  },
+
+  encouragementHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: spacing.md,
+  },
+
+  encouragementMessage: {
+    ...typography.headlineSmall,
+    fontWeight: '700',
+    flex: 1,
+  },
+
+  encouragementDescription: {
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+
   // Actions
   actions: {
     flexDirection: 'row',
